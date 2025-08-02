@@ -32,23 +32,8 @@ export default function LoginPage() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: `url('data:image/svg+xml,${encodeURIComponent(`
-            <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-              <g fill="none" fill-rule="evenodd">
-                <g fill="%23ffffff" fill-opacity="0.03">
-                  <circle cx="10" cy="10" r="1"/>
-                  <circle cx="30" cy="10" r="1"/>
-                  <circle cx="50" cy="10" r="1"/>
-                  <circle cx="10" cy="30" r="1"/>
-                  <circle cx="30" cy="30" r="1"/>
-                  <circle cx="50" cy="30" r="1"/>
-                  <circle cx="10" cy="50" r="1"/>
-                  <circle cx="30" cy="50" r="1"/>
-                  <circle cx="50" cy="50" r="1"/>
-                </g>
-              </g>
-            </svg>
-          `)})`)`,
+          background: 'radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%)',
+          opacity: 0.8,
         },
       }}
     >
