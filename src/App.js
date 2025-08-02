@@ -6,7 +6,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import AuthProvider, { useAuth } from './contexts/AuthContext';
-import ThemeProvider as CustomThemeProvider, { useTheme } from './contexts/ThemeContext';
+import CustomThemeProvider, { useTheme } from './contexts/ThemeContext';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Navbar from './components/Navbar';
