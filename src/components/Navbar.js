@@ -60,20 +60,33 @@ export default function Navbar() {
   return (
     <AppBar position="sticky" elevation={0} sx={{ backdropFilter: 'blur(10px)' }}>
       <Toolbar>
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{
-            fontWeight: 700,
-            background: 'linear-gradient(135deg, #ffffff, #e5e7eb)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            mr: 4,
-          }}
-        >
-          📝 Infosonik
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #ffffff, #e5e7eb)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mr: 1,
+            }}
+          >
+            🔧 INFOSONIK
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '0.65rem',
+              fontWeight: 500,
+              letterSpacing: '0.5px',
+            }}
+          >
+            SYSTEMS
+          </Typography>
+        </Box>
 
         <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
           {navigation.map((item) => {
