@@ -1,11 +1,20 @@
 {
-  "name": "notes-calendar-app",
-  "version": "1.0.0",
+  "name": "infosonik-notes-calendar-app",
+  "version": "2.0.0",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "react-router-dom": "^6.8.0",
+    "@mui/material": "^5.15.0",
+    "@mui/icons-material": "^5.15.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "react-dropzone": "^14.2.3",
+    "date-fns": "^2.30.0",
+    "react-calendar": "^4.6.0",
+    "react-toastify": "^9.1.3"
   },
   "scripts": {
     "start": "react-scripts start",
