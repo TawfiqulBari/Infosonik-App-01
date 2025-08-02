@@ -69,40 +69,37 @@ export default function LoginPage() {
               },
             }}
           >
-            <Avatar
+            {/* Company Logo */}
+            <Box
               sx={{
-                width: 64,
-                height: 64,
-                margin: '0 auto 16px',
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
-                fontSize: '1.8rem',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                mb: 2,
               }}
             >
-              🔧
-            </Avatar>
+              <img 
+                src="/infosonik-logo.svg" 
+                alt="Infosonik Systems Limited" 
+                style={{
+                  height: '80px',
+                  filter: 'brightness(0) invert(1)',
+                  opacity: 0.95,
+                }}
+              />
+            </Box>
             
             <Typography 
-              variant="h4" 
-              component="h1" 
+              variant="subtitle2" 
               sx={{
-                fontWeight: 700,
-                mb: 1,
-                textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              }}
-            >
-              INFOSONIK
-            </Typography>
-            
-            <Typography 
-              variant="subtitle1" 
-              sx={{
-                opacity: 0.95,
+                opacity: 0.9,
                 fontWeight: 500,
-                letterSpacing: '0.5px',
+                letterSpacing: '1px',
+                textAlign: 'center',
+                fontSize: '0.85rem',
               }}
             >
-              SYSTEMS LIMITED
+              PROFESSIONAL IT SOLUTIONS
             </Typography>
           </Box>
           
