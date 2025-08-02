@@ -73,20 +73,76 @@ export default function LoginPage() {
             <Box
               sx={{
                 display: 'flex',
-                justifyContent: 'center',
+                flexDirection: 'column',
                 alignItems: 'center',
                 mb: 2,
               }}
             >
-              <img 
-                src="/infosonik-logo.svg" 
-                alt="Infosonik Systems Limited" 
-                style={{
-                  height: '80px',
-                  filter: 'brightness(0) invert(1)',
-                  opacity: 0.95,
+              {/* Professional Logo Design */}
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 2,
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mb: 2,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    width: '60%',
+                    height: '60%',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '50%',
+                    transform: 'translate(-50%, -50%)',
+                  },
                 }}
-              />
+              >
+                <Typography
+                  sx={{
+                    fontSize: '28px',
+                    fontWeight: 900,
+                    color: 'white',
+                    fontFamily: 'monospace',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    zIndex: 1,
+                  }}
+                >
+                  IS
+                </Typography>
+              </Box>
+              
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                sx={{
+                  fontWeight: 700,
+                  mb: 0.5,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  letterSpacing: '1px',
+                }}
+              >
+                INFOSONIK
+              </Typography>
+              
+              <Typography 
+                variant="subtitle1" 
+                sx={{
+                  opacity: 0.95,
+                  fontWeight: 500,
+                  letterSpacing: '2px',
+                  fontSize: '0.9rem',
+                }}
+              >
+                SYSTEMS LIMITED
+              </Typography>
             </Box>
             
             <Typography 
