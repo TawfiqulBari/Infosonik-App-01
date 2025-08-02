@@ -110,12 +110,36 @@ export default function Dashboard() {
   return (
     <Container maxWidth="xl">
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Welcome back, {user?.name?.split(' ')[0]}! 👋
-        </Typography>
-        <Typography variant="body1" color="textSecondary">
-          Here's what's happening with your workspace today.
-        </Typography>
+        <Box sx={{ 
+          background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+          color: 'white',
+          p: 4,
+          borderRadius: 3,
+          mb: 3,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '200px',
+            height: '200px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '50%',
+            transform: 'translate(50%, -50%)',
+          },
+        }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+            Welcome back, {user?.name?.split(' ')[0]}! 👋
+          </Typography>
+          <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+            Infosonik Systems Limited - Professional Workspace
+          </Typography>
+          <Typography variant="body1" sx={{ opacity: 0.8 }}>
+            Your centralized hub for notes, calendar events, documents, and team collaboration.
+          </Typography>
+        </Box>
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
