@@ -1,16 +1,70 @@
-# Infosonik App 01 - Notes & Calendar Application
+# 🏢 Infosonik Systems Limited - Notes & Calendar Platform
 
-A full-stack web application built with React frontend and FastAPI backend, featuring note-taking, calendar management, and voice-to-text capabilities.
+![Infosonik Logo](public/infosonik-logo.svg)
 
-## 🚀 Features
+**Professional workspace application for Infosonik team collaboration and productivity management.**
 
+A modern, enterprise-grade web application built with React frontend and FastAPI backend, featuring professional branding, Google Workspace integration, secure authentication, and comprehensive productivity tools.
+
+## 🌐 **Live Production Application**
+
+**🚀 Access the live application:** [http://infsnk-app-01.tawfiqulbari.work:8080](http://infsnk-app-01.tawfiqulbari.work:8080)
+
+- **Status:** ✅ Live and running in production
+- **Environment:** Production-ready deployment
+- **Security:** Restricted to @infosonik.com Google Workspace accounts
+- **Server:** Ubuntu 20.04 LTS on dedicated infrastructure
+
+## ✨ **Current Production Features** 
+
+### 🏢 **Enterprise Branding & Design**
+- **🎨 Professional Infosonik Systems Limited Branding**: Custom logo, blue gradient theme, and corporate identity
+- **🖼️ Custom SVG Logo**: Integrated circuit-pattern logo with company branding
+- **🎯 Service Showcase**: IT Solutions, Cloud Services, and Security service chips
+- **🌟 Glass-morphism UI**: Modern backdrop blur effects and gradient backgrounds
+- **📱 Fully Responsive**: Optimized for desktop, tablet, and mobile devices
+
+### 🔐 **Security & Authentication**
+- **🛡️ Domain-Restricted Access**: Limited to @infosonik.com Google Workspace accounts only
+- **🔑 Google OAuth Integration**: Seamless single sign-on with Google Workspace
+- **🌐 Production-Ready**: Live deployment with proper error handling and security
+
+### 💻 **Technical Features**
 - **📝 Note Management**: Create, store, and manage notes with multi-language support (English/Bengali)
 - **📅 Calendar Integration**: Google Calendar event creation and management
 - **🎤 Voice-to-Text**: Speech recognition functionality (infrastructure ready)
 - **🌐 Multi-language Support**: English and Bengali language support
-- **🔐 OAuth Integration**: Google OAuth authentication ready
-- **📱 Responsive Design**: Mobile-friendly React interface
-- **🐳 Docker Ready**: Containerized deployment with Docker Compose
+- **📁 File Attachments**: Google Drive integration for document management
+- **🌙 Dark Mode**: Professional dark theme capability
+- **💾 Backup/Restore**: Data backup and restoration functionality
+- **🐳 Containerized**: Full Docker deployment with PostgreSQL database
+
+## 📊 **Current Deployment Status**
+
+### 🌐 **Production Environment Details**
+- **🚀 Deployment Date**: August 2, 2025
+- **⚡ Server Status**: ✅ Active and operational
+- **🔄 Container Status**: 2/2 containers running (webapp + database)
+- **📡 Port Configuration**: External 8080 → Internal 8000
+- **🗄️ Database**: PostgreSQL 15 with persistent volume storage
+- **🔧 Restart Policy**: Configured for automatic container restart
+- **🌐 OAuth Redirect**: `http://infsnk-app-01.tawfiqulbari.work:8080/auth/callback`
+
+### 🏗️ **Infrastructure Specifications**
+- **🖥️ Server**: Ubuntu 20.04 LTS
+- **🐳 Docker**: Multi-stage containerized deployment
+- **🔗 Networking**: Isolated app network with service discovery
+- **💾 Storage**: Persistent PostgreSQL data volumes
+- **🛡️ Security**: Domain-restricted authentication, environment variable management
+- **📈 Scalability**: Ready for horizontal scaling and load balancing
+
+### 🎨 **UI/UX Enhancements**
+- **✨ Professional Login Page**: Infosonik Systems Limited branded interface
+- **🖼️ Custom Logo Integration**: SVG logo with circuit pattern design
+- **🎨 Blue Gradient Theme**: Corporate blue color scheme throughout
+- **🔧 Service Badges**: IT Solutions, Cloud Services, and Security indicators
+- **📱 Responsive Design**: Optimized for all device sizes
+- **🌟 Glass Morphism**: Modern backdrop blur and transparency effects
 
 ## 🛠️ Technology Stack
 
@@ -99,8 +153,8 @@ Infosonik-App-01/
    ```
 
 6. **Access the application**
-   - Main App: http://localhost:8000
-   - API Docs: http://localhost:8000/docs
+   - Main App: http://localhost:8080
+   - API Docs: http://localhost:8080/docs
 
 ## 🐳 Docker Deployment
 
