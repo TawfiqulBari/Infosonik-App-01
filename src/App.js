@@ -1,86 +1,104 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline, Box } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-function App() {
-  const [note, setNote] = useState({ title: '', content: '', language: 'en' });
-  const [event, setEvent] = useState({
-    title: '',
-    description: '',
-    start_time: '',
-    end_time: ''
+import AuthProvider, { useAuth } from './contexts/AuthContext';
+import ThemeProvider as CustomThemeProvider, { useTheme } from './contexts/ThemeContext';
+import LoginPage from './components/LoginPage';
+import Dashboard from './components/Dashboard';
+import Navbar from './components/Navbar';
+import NotesPage from './components/NotesPage';
+import CalendarPage from './components/CalendarPage';
+import FilesPage from './components/FilesPage';
+import SettingsPage from './components/SettingsPage';
+import BackupPage from './components/BackupPage';
+
+function AppContent() {
+  const { user, loading } = useAuth();
+  const { theme } = useTheme();
+
+  const muiTheme = createTheme({
+    palette: {
+      mode: theme,
+      primary: {
+        main: '#3b82f6',
+      },
+      secondary: {
+        main: '#8b5cf6',
+      },
+      background: {
+        default: theme === 'dark' ? '#1a1a1a' : '#f5f5f5',
+        paper: theme === 'dark' ? '#2d2d2d' : '#ffffff',
+      },
+    },
+    typography: {
+      fontFamily: 'Inter, sans-serif',
+    },
   });
 
-  const handleNoteSubmit = async () => {
-    try {
-      await axios.post('/notes/', note);
-      alert('Note created successfully!');
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleEventSubmit = async () => {
-    try {
-      // In a real app, you'd handle Google OAuth here
-      const credentials = { token: 'user_token' };
-      await axios.post('/events/', { ...event, credentials });
-      alert('Event created successfully!');
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+        className="gradient-bg"
+      >
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </Box>
+    );
+  }
 
   return (
-    <div className="App">
-      <h1>Notes & Calendar App</h1>
-      
-      <div>
-        <h2>Create Note</h2>
-        <input
-          placeholder="Title"
-          value={note.title}
-          onChange={(e) => setNote({...note, title: e.target.value})}
-        />
-        <textarea
-          placeholder="Content"
-          value={note.content}
-          onChange={(e) => setNote({...note, content: e.target.value})}
-        />
-        <select
-          value={note.language}
-          onChange={(e) => setNote({...note, language: e.target.value})}
-        >
-          <option value="en">English</option>
-          <option value="bn">Bangla</option>
-        </select>
-        <button onClick={handleNoteSubmit}>Save Note</button>
-      </div>
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
+      <Router>
+        {!user ? (
+          <LoginPage />
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Navbar />
+            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/notes" element={<NotesPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/files" element={<FilesPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/backup" element={<BackupPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Box>
+          </Box>
+        )}
+      </Router>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={theme}
+      />
+    </ThemeProvider>
+  );
+}
 
-      <div>
-        <h2>Create Calendar Event</h2>
-        <input
-          placeholder="Title"
-          value={event.title}
-          onChange={(e) => setEvent({...event, title: e.target.value})}
-        />
-        <textarea
-          placeholder="Description"
-          value={event.description}
-          onChange={(e) => setEvent({...event, description: e.target.value})}
-        />
-        <input
-          type="datetime-local"
-          value={event.start_time}
-          onChange={(e) => setEvent({...event, start_time: e.target.value})}
-        />
-        <input
-          type="datetime-local"
-          value={event.end_time}
-          onChange={(e) => setEvent({...event, end_time: e.target.value})}
-        />
-        <button onClick={handleEventSubmit}>Create Event</button>
-      </div>
-    </div>
+function App() {
+  return (
+    <AuthProvider>
+      <CustomThemeProvider>
+        <AppContent />
+      </CustomThemeProvider>
+    </AuthProvider>
   );
 }
 
