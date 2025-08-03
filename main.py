@@ -313,6 +313,32 @@ def create_calendar_event(event_data, credentials):
     created_event = service.events().insert(calendarId='primary', body=event).execute()
     return created_event['id']
 
+def fetch_google_calendar_events(credentials, time_min=None, time_max=None):
+    """Fetch events from Google Calendar"""
+    # Refresh token if needed
+    if credentials.expired and credentials.refresh_token:
+        credentials.refresh(Request())
+    
+    service = build('calendar', 'v3', credentials=credentials)
+    
+    # Default to fetching events from 30 days ago to 30 days from now
+    if not time_min:
+        time_min = (datetime.utcnow() - timedelta(days=30)).isoformat() + 'Z'
+    if not time_max:
+        time_max = (datetime.utcnow() + timedelta(days=30)).isoformat() + 'Z'
+    
+    events_result = service.events().list(
+        calendarId='primary',
+        timeMin=time_min,
+        timeMax=time_max,
+        maxResults=100,
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    
+    events = events_result.get('items', [])
+    return events
+
 # Authentication endpoints
 @app.get("/auth/google")
 async def google_auth():
@@ -723,10 +749,12 @@ async def get_events(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    events = db.query(Event).filter(Event.user_id == current_user.id).all()
+    # Get local events from database
+    local_events = db.query(Event).filter(Event.user_id == current_user.id).all()
     result = []
     
-    for event in events:
+    # Process local events
+    for event in local_events:
         attachments_data = []
         if event.attachments:
             attachment_ids = json.loads(event.attachments)
@@ -753,6 +781,57 @@ async def get_events(
             created_at=event.created_at,
             updated_at=event.updated_at
         ))
+    
+    # Try to fetch Google Calendar events
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if session and session.access_token:
+        try:
+            credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+            google_events = fetch_google_calendar_events(credentials)
+            
+            # Add Google Calendar events that aren't already in our database
+            for g_event in google_events:
+                # Check if this Google event is already in our local database
+                existing_event = db.query(Event).filter(
+                    Event.user_id == current_user.id,
+                    Event.google_event_id == g_event.get('id')
+                ).first()
+                
+                if not existing_event:
+                    # Parse start and end times
+                    start_time = None
+                    end_time = None
+                    
+                    if 'dateTime' in g_event.get('start', {}):
+                        start_time = datetime.fromisoformat(g_event['start']['dateTime'].replace('Z', '+00:00'))
+                    elif 'date' in g_event.get('start', {}):
+                        start_time = datetime.fromisoformat(g_event['start']['date'] + 'T00:00:00+00:00')
+                    
+                    if 'dateTime' in g_event.get('end', {}):
+                        end_time = datetime.fromisoformat(g_event['end']['dateTime'].replace('Z', '+00:00'))
+                    elif 'date' in g_event.get('end', {}):
+                        end_time = datetime.fromisoformat(g_event['end']['date'] + 'T23:59:59+00:00')
+                    
+                    if start_time and end_time:
+                        # Add Google Calendar event to results
+                        result.append(EventResponse(
+                            id=-int(g_event.get('id', '0')[:8], 16) if g_event.get('id') else -1,  # Negative ID for Google events
+                            title=g_event.get('summary', 'No Title'),
+                            description=g_event.get('description', ''),
+                            start_time=start_time,
+                            end_time=end_time,
+                            google_event_id=g_event.get('id'),
+                            attachments=[],
+                            created_at=datetime.utcnow(),
+                            updated_at=datetime.utcnow()
+                        ))
+        
+        except Exception as e:
+            print(f"Failed to fetch Google Calendar events: {e}")
+            # Continue with just local events if Google Calendar fails
+    
+    # Sort events by start time
+    result.sort(key=lambda x: x.start_time)
     
     return result
 

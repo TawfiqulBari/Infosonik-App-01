@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Typography,
@@ -13,16 +13,20 @@ import {
   CardContent,
   Grid,
   Chip,
+  CircularProgress,
 } from '@mui/material';
-import { Add, Event as EventIcon } from '@mui/icons-material';
+import { Add, Event as EventIcon, Refresh } from '@mui/icons-material';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import axios from 'axios';
+import api from '../utils/api';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
+import { AuthContext } from '../contexts/AuthContext';
 
 export default function CalendarPage() {
+  const { token } = useContext(AuthContext);
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,22 +37,46 @@ export default function CalendarPage() {
   });
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (token) {
+      fetchEvents();
+    }
+  }, [token]);
 
   const fetchEvents = async () => {
+    if (!token) {
+      toast.error('Please log in to view events');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await axios.get('/events/');
+      const response = await api.get('/events/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setEvents(response.data);
+      toast.success(`Loaded ${response.data.length} events (including Google Calendar)`);
     } catch (error) {
       toast.error('Failed to fetch events');
       console.error('Fetch events error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async () => {
+    if (!token) {
+      toast.error('Please log in to create events');
+      return;
+    }
+
     try {
-      await axios.post('/events/', formData);
+      await api.post('/events/', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       toast.success('Event created successfully');
       fetchEvents();
       setDialogOpen(false);
@@ -67,15 +95,26 @@ export default function CalendarPage() {
     <Container maxWidth="xl">
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
-          Calendar
+          Calendar {loading && <CircularProgress size={24} sx={{ ml: 2 }} />}
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setDialogOpen(true)}
-        >
-          New Event
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={fetchEvents}
+            disabled={loading || !token}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setDialogOpen(true)}
+            disabled={!token}
+          >
+            New Event
+          </Button>
+        </Box>
       </Box>
 
       <Grid container spacing={3}>
@@ -104,9 +143,14 @@ export default function CalendarPage() {
               ) : (
                 eventsForSelectedDate.map((event) => (
                   <Box key={event.id} sx={{ mb: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                    <Typography variant="subtitle1">{event.title}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Typography variant="subtitle1">{event.title}</Typography>
+                      {event.google_event_id && event.id < 0 && (
+                        <Chip size="small" label="Google" color="primary" variant="outlined" />
+                      )}
+                    </Box>
                     <Typography variant="body2" color="textSecondary">
-                      {event.description}
+                      {event.description || 'No description'}
                     </Typography>
                     <Typography variant="caption">
                       {format(new Date(event.start_time), 'HH:mm')} - {format(new Date(event.end_time), 'HH:mm')}
