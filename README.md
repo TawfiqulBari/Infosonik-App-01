@@ -8,7 +8,7 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 
 ## 🌐 **Live Production Application**
 
-**🚀 Access the live application:** [http://infsnk-app-01.tawfiqulbari.work:8080](http://infsnk-app-01.tawfiqulbari.work:8080)
+**🚀 Access the live application:** [https://infsnk-app-01.tawfiqulbari.work](https://infsnk-app-01.tawfiqulbari.work)
 
 - **Status:** ✅ Live and running in production
 - **Environment:** Production-ready deployment
@@ -27,6 +27,7 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 ### 🔐 **Security & Authentication**
 - **🛡️ Domain-Restricted Access**: Limited to @infosonik.com Google Workspace accounts only
 - **🔑 Google OAuth Integration**: Seamless single sign-on with Google Workspace
+- **🔒 HTTPS Deployment**: Secure SSL/TLS encrypted connections via Traefik reverse proxy
 - **🌐 Production-Ready**: Live deployment with proper error handling and security
 
 ### 💻 **Technical Features**
@@ -48,15 +49,16 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 - **📡 Port Configuration**: External 8080 → Internal 8000
 - **🗄️ Database**: PostgreSQL 15 with persistent volume storage
 - **🔧 Restart Policy**: Configured for automatic container restart
-- **🌐 OAuth Redirect**: `http://infsnk-app-01.tawfiqulbari.work:8080/auth/callback`
+**🌐 OAuth Redirect**: `https://infsnk-app-01.tawfiqulbari.work/auth/callback`
 
 ### 🏗️ **Infrastructure Specifications**
 - **🖥️ Server**: Ubuntu 20.04 LTS
 - **🐳 Docker**: Multi-stage containerized deployment
 - **🔗 Networking**: Isolated app network with service discovery
 - **💾 Storage**: Persistent PostgreSQL data volumes
-- **🛡️ Security**: Domain-restricted authentication, environment variable management
+- **🛡️ Security**: HTTPS with Traefik reverse proxy, domain-restricted authentication
 - **📈 Scalability**: Ready for horizontal scaling and load balancing
+- **🌐 Domain**: `infsnk-app-01.tawfiqulbari.work` with automatic SSL certificate management
 
 ### 🎨 **UI/UX Enhancements**
 - **✨ Professional Login Page**: Infosonik Systems Limited branded interface
