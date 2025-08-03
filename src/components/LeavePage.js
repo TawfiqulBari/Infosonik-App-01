@@ -40,11 +40,11 @@ export default function LeavePage() {
     reason: ''
   });
 
-  useEffect(() => {
+  useEffect(() => {
     fetchLeaveApplications();
   }, []);
 
-  const fetchLeaveApplications = async () => {
+  const fetchLeaveApplications = async () => {
     try {
       const response = await axios.get('/leave/my-applications');
       setLeaveApplications(response.data);
@@ -54,7 +54,7 @@ export default function LeavePage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async () => {
     if (!form.leave_type || !form.start_date || !form.end_date || !form.reason) {
       toast.error('Please fill out all fields');
       return;
@@ -116,7 +116,7 @@ export default function LeavePage() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {leaveApplications.map((application) => (
+                  {leaveApplications.map((application) => (
                     <TableRow key={application.id}>
                       <TableCell>{application.leave_type}</TableCell>
                       <TableCell>{format(new Date(application.start_date), 'MMM dd, yyyy')}</TableCell>
@@ -132,11 +132,11 @@ export default function LeavePage() {
         </Grid>
       </Grid>
 
-      <Fab color="primary" aria-label="add" onClick={() => setOpen(true)} sx={{ position: 'fixed', bottom: 16, right: 16 }}>
+      <Fab color="primary" aria-label="add" onClick={() => setOpen(true)} sx={{ position: 'fixed', bottom: 16, right: 16 }}>
         <AddIcon />
       </Fab>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Apply for Leave</DialogTitle>
         <DialogContent>
           <TextField
@@ -144,7 +144,7 @@ export default function LeavePage() {
             label="Leave Type"
             fullWidth
             value={form.leave_type}
-            onChange={(e) => setForm({ ...form, leave_type: e.target.value })}
+            onChange={(e) => setForm({ ...form, leave_type: e.target.value })}
           />
           <TextField
             margin="dense"
@@ -152,7 +152,7 @@ export default function LeavePage() {
             type="date"
             fullWidth
             value={form.start_date}
-            onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+            onChange={(e) => setForm({ ...form, start_date: e.target.value })}
             InputLabelProps={{ shrink: true }}
           />
           <TextField
@@ -161,7 +161,7 @@ export default function LeavePage() {
             type="date"
             fullWidth
             value={form.end_date}
-            onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+            onChange={(e) => setForm({ ...form, end_date: e.target.value })}
             InputLabelProps={{ shrink: true }}
           />
           <TextField
@@ -171,15 +171,14 @@ export default function LeavePage() {
             multiline
             minRows={3}
             value={form.reason}
-            onChange={(e) => setForm({ ...form, reason: e.target.value })}
+            onChange={(e) => setForm({ ...form, reason: e.target.value })}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained">Submit</Button>
         </DialogActions>
       </Dialog>
     </Container>
   );
 }
-
