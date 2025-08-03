@@ -1,6 +1,10 @@
-### **New Functionalities**
-- **Sales Role Enhancements**: Added `manage_sales_data` permission for Sales role users to manage MEDDPICC and Sales Funnel data.
-- **Dashboard Data Integrity**: Ensured alignment between database models and Pydantic schemas for consistent data handling.
+### **Latest Updates (August 2025)**
+- **Complete Role-Based Access Control**: Implemented comprehensive RBAC with Admin, HR, Accounts, Sales, and Technical roles
+- **Sales Management Suite**: Full MEDDPICC analysis and Sales Funnel tracking system
+- **HR & Expense Management**: Leave applications and convenience bill submission/approval workflows
+- **Enhanced Google Integrations**: Gmail, Google Drive, and Calendar with advanced sharing capabilities
+- **Database Schema Optimization**: Updated database structure with proper relationships and constraints
+- **Production-Ready OAuth**: Fixed authentication flow with proper error handling and domain restrictions
 
 # 🏢 Infosonik Systems Limited - Notes & Calendar Platform
 
@@ -45,21 +49,64 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 - **🌐 API Integration**: ✅ All API endpoints secured with authentication middleware
 
 ### 💻 **Technical Features**
-- **📝 Note Management**: Create, store, and manage notes with multi-language support (English/Bengali)
-- **📅 Calendar Integration**: Google Calendar event creation and management
-- **🎤 Voice-to-Text**: Speech recognition functionality (infrastructure ready)
-- **🌐 Multi-language Support**: English and Bengali language support
-- **📁 File Attachments**: Google Drive integration for document management
-- **🌙 Dark Mode**: Professional dark theme capability
-- **💾 Backup/Restore**: Data backup and restoration functionality
-- **🐳 Containerized**: Full Docker deployment with PostgreSQL database
-- **👥 Role-Based Access Control**: Comprehensive permission system with Admin, HR, Accounts, Sales, and Technical roles
-- **💼 Sales Management**: MEDDPICC analysis and Sales Funnel tracking for sales team members
-- **📊 Admin Dashboard**: System statistics and user management for administrators
-- **📧 Gmail Integration**: Email management with read, send, and reply functionality
-- **💾 Google Drive**: File sharing and document management through Google Drive API
-- **📋 Leave Management**: Employee leave application and approval workflow
-- **💳 Expense Management**: Convenience bill submission and approval system
+
+#### **Core Functionality**
+- **📝 Advanced Note Management**: Create, edit, and organize notes with multi-language support (English/Bengali)
+- **📅 Calendar Integration**: Full Google Calendar sync with event creation, editing, and sharing
+- **🎤 Voice-to-Text**: Speech recognition functionality for hands-free note taking
+- **🌐 Multi-language Support**: Comprehensive English and Bengali language support
+- **📁 File Management**: Complete Google Drive integration with upload, download, and sharing
+- **🌙 Theme Support**: Professional light/dark mode with customizable themes
+- **💾 Data Management**: Comprehensive backup, restore, and export functionality
+
+#### **Enterprise Features**
+- **👥 Role-Based Access Control (RBAC)**: Granular permission system with 5 distinct roles:
+  - **🛡️ Admin**: Full system access, user management, and configuration
+  - **👤 HR**: Leave management, employee records, and approval workflows
+  - **💰 Accounts**: Expense management, bill approvals, and financial oversight
+  - **💼 Sales**: MEDDPICC analysis, sales funnel tracking, and opportunity management
+  - **🔧 Technical**: System maintenance, technical documentation, and infrastructure
+
+#### **Sales Management Suite**
+- **📊 MEDDPICC Analysis**: Complete sales methodology tracking with:
+  - Metrics, Economic Buyer, Decision Criteria, Decision Process
+  - Paper Process, Identify Pain, Champion, Competition analysis
+- **🏆 Sales Funnel Management**: Opportunity pipeline with stages, probabilities, and forecasting
+- **💡 Client Management**: Comprehensive client and opportunity tracking
+
+#### **HR & Administrative Tools**
+- **📋 Leave Management System**: 
+  - Employee leave application submission
+  - Multi-level approval workflows
+  - Leave balance tracking and reporting
+- **💳 Expense Management**: 
+  - Convenience bill submission with receipt upload
+  - Approval workflows with comments and tracking
+  - Weekly expense reporting and analytics
+- **📊 Admin Dashboard**: Real-time system statistics and user activity monitoring
+- **👥 User Management**: Role assignment, permission management, and user lifecycle
+
+#### **Google Workspace Integration**
+- **📧 Gmail Integration**: 
+  - Read, send, and reply to emails directly within the platform
+  - Email threading and conversation management
+  - Attachment handling and inline media support
+- **💾 Google Drive**: 
+  - File browser with folder navigation
+  - Upload, download, and organize documents
+  - Advanced sharing with domain-wide permissions
+  - File preview and collaborative editing
+- **📅 Google Calendar**: 
+  - Event creation, editing, and deletion
+  - Calendar sharing and public event management
+  - Meeting invitation and RSVP handling
+
+#### **Technical Infrastructure**
+- **🐳 Containerization**: Full Docker deployment with multi-stage builds
+- **🗄️ Database**: PostgreSQL 15 with optimized schema and relationships
+- **🔐 Security**: JWT authentication, OAuth 2.0, and domain restrictions
+- **⚡ Performance**: Optimized queries, caching, and connection pooling
+- **🌐 Scalability**: Production-ready with horizontal scaling capabilities
 
 ## 📊 **Current Deployment Status**
 
@@ -283,29 +330,142 @@ Once the application is running, visit:
 
 ## 🗄️ Database Schema
 
-### Notes Table
+The application uses a comprehensive PostgreSQL database schema with the following key tables:
+
+### **Core Tables**
+
+#### **Users & Authentication**
 ```sql
-CREATE TABLE notes (
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    title VARCHAR NOT NULL,
-    content TEXT,
-    language VARCHAR,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255),
+    google_id VARCHAR(255) UNIQUE,
+    profile_picture VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    is_admin BOOLEAN DEFAULT FALSE,
+    role_id INTEGER REFERENCES roles (id),
+    preferences TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    permissions TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### Events Table
+#### **Content Management**
 ```sql
+CREATE TABLE notes (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    title VARCHAR(255),
+    content TEXT,
+    language VARCHAR(10),
+    theme VARCHAR(255) DEFAULT 'light',
+    attachments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE events (
     id SERIAL PRIMARY KEY,
-    title VARCHAR NOT NULL,
+    user_id INTEGER,
+    title VARCHAR(255),
     description TEXT,
     start_time TIMESTAMP,
     end_time TIMESTAMP,
-    google_event_id VARCHAR,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    google_event_id VARCHAR(255),
+    attachments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+### **Enterprise Features**
+
+#### **Sales Management**
+```sql
+CREATE TABLE meddpicc (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    client_name VARCHAR(255),
+    opportunity_name VARCHAR(255),
+    metrics TEXT,
+    economic_buyer TEXT,
+    decision_criteria TEXT,
+    decision_process TEXT,
+    paper_process TEXT,
+    identify_pain TEXT,
+    champion TEXT,
+    competition TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sales_funnel (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    opportunity_name VARCHAR(255),
+    client_name VARCHAR(255),
+    stage VARCHAR(255),
+    probability INTEGER,
+    amount INTEGER,
+    closing_date TIMESTAMP,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### **HR & Administrative**
+```sql
+CREATE TABLE leave_applications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    leave_type VARCHAR(255),
+    start_date TIMESTAMP,
+    end_date TIMESTAMP,
+    days_requested INTEGER,
+    reason TEXT,
+    status VARCHAR(255) DEFAULT 'pending',
+    approved_by INTEGER,
+    approval_date TIMESTAMP,
+    approval_comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE convenience_bills (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,
+    week_start_date TIMESTAMP,
+    week_end_date TIMESTAMP,
+    total_amount INTEGER,
+    description TEXT,
+    receipt_file_id INTEGER,
+    status VARCHAR(255) DEFAULT 'pending',
+    approved_by INTEGER,
+    approval_date TIMESTAMP,
+    approval_comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### **Supporting Tables**
+
+- **file_attachments**: File management and Google Drive integration
+- **user_sessions**: OAuth token management and session handling
+- **user_groups**: Team and department organization
+- **group_memberships**: User-to-group relationship management
+
+For the complete schema, see `migrations/001_initial.sql`.
 
 ## 🚀 Production Deployment
 
@@ -482,14 +642,16 @@ For support and questions:
 
 ### Upcoming Features
 
-- [ ] **User Authentication** - Multi-user support
-- [ ] **Real-time Collaboration** - WebSocket integration
-- [ ] **Mobile App** - React Native version
-- [ ] **Advanced Search** - Full-text search capabilities
-- [ ] **File Attachments** - Document and image uploads
-- [ ] **Export/Import** - Data backup and restore
-- [ ] **Notifications** - Email and push notifications
-- [ ] **Themes** - Dark mode and customization options
+- [ ] **Real-time Collaboration** - WebSocket integration for live editing
+- [ ] **Mobile App** - React Native version for iOS/Android
+- [ ] **Advanced Search** - Full-text search with Elasticsearch
+- [ ] **Notification System** - Real-time push notifications and email alerts
+- [ ] **Advanced Analytics** - Business intelligence dashboards and reporting
+- [ ] **Chat Integration** - Google Chat API integration for team communication
+- [ ] **Document Templates** - Pre-built templates for common business documents
+- [ ] **Workflow Automation** - Custom business process automation
+- [ ] **Multi-tenant Support** - Support for multiple organizations
+- [ ] **API Gateway** - Rate limiting and API management
 
 ### Technical Improvements
 
