@@ -30,7 +30,7 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_DB: notesapp
+      POSTGRES_DB: webapp_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: ${DB_PASSWORD:-securepassword123}
     volumes:
@@ -42,9 +42,13 @@ services:
   app:
     build: .
     environment:
-      DATABASE_URL: postgresql://user:${DB_PASSWORD:-securepassword123}@db:5432/notesapp
+      DATABASE_URL: postgresql://user:${DB_PASSWORD:-securepassword123}@db:5432/webapp_db
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      SECRET_KEY: ${SECRET_KEY}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
     depends_on:
       - db
       - traefik
