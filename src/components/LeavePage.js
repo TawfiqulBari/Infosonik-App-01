@@ -75,7 +75,7 @@ export default function LeavePage() {
   const leaveStatuses = {
     approved: <CheckCircleIcon color="success" />, 
     pending: <HourglassEmptyIcon color="warning" />, 
-    rejected: <>❌</>
+    rejected: <span>❌</span>
   };
 
   return (
