@@ -88,7 +88,7 @@ Infosonik-App-01/
 ## 🔗 Useful Links After Setup
 
 - **Repository**: https://github.com/TawfiqulBari/Infosonik-App-01
-- **Live Demo**: http://62.169.16.31:8080 (your deployed app)
+- **Live Demo**: https://infsnk-app-01.tawfiqulbari.work (your deployed app)
 - **Issues**: https://github.com/TawfiqulBari/Infosonik-App-01/issues
 - **Wiki**: https://github.com/TawfiqulBari/Infosonik-App-01/wiki
 

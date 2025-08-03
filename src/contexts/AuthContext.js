@@ -19,7 +19,9 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+import api from '../utils/api';
+
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchCurrentUser();
     } else {
       setLoading(false);
@@ -28,7 +30,7 @@ export default function AuthProvider({ children }) {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await axios.get('/auth/me');
+const response = await api.get('/auth/me');
       setUser(response.data);
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -40,7 +42,7 @@ export default function AuthProvider({ children }) {
 
   const login = async () => {
     try {
-      const response = await axios.get('/auth/google');
+const response = await api.get('/auth/google');
       window.location.href = response.data.auth_url;
     } catch (error) {
       toast.error('Failed to initiate Google login');
@@ -50,7 +52,7 @@ export default function AuthProvider({ children }) {
 
   const handleCallback = async (code) => {
     try {
-      const response = await axios.get(`/auth/callback?code=${code}`);
+const response = await api.get(`/auth/callback?code=${code}`);
       const { access_token, user: userData } = response.data;
       
       localStorage.setItem('token', access_token);
@@ -70,7 +72,7 @@ export default function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await axios.post('/auth/logout');
+await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -84,7 +86,7 @@ export default function AuthProvider({ children }) {
 
   const updatePreferences = async (preferences) => {
     try {
-      await axios.put('/user/preferences', preferences);
+await api.put('/user/preferences', preferences);
       setUser(prevUser => ({
         ...prevUser,
         preferences: { ...prevUser.preferences, ...preferences }

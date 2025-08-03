@@ -3,7 +3,7 @@
 ## 🎉 Deployment Status: SUCCESSFUL ✅
 
 Your advanced notes and calendar application has been successfully deployed and is running at:
-**http://62.169.16.31:8080**
+**https://infsnk-app-01.tawfiqulbari.work**
 
 ---
 
@@ -80,8 +80,8 @@ To enable authentication, you need to configure Google OAuth credentials:
 2. Click **Create Credentials** → **OAuth 2.0 Client IDs**
 3. Choose **Web application**
 4. Add authorized redirect URIs:
-   - `http://62.169.16.31:8080/auth/callback`
-   - `http://localhost:8080/auth/callback` (for development)
+   - `https://infsnk-app-01.tawfiqulbari.work/auth/callback`
+   - `http://localhost/auth/callback` (for development)
 5. Save and copy the **Client ID** and **Client Secret**
 
 ### Step 4: Update Server Configuration
@@ -198,8 +198,8 @@ docker-compose -f docker-compose.prod.yml up -d
 ## 📊 API Documentation
 
 Once the application is running, visit:
-- **API Docs**: http://62.169.16.31:8080/docs
-- **Alternative Docs**: http://62.169.16.31:8080/redoc
+- **API Docs**: https://infsnk-app-01.tawfiqulbari.work/docs
+- **Alternative Docs**: https://infsnk-app-01.tawfiqulbari.work/redoc
 
 ---
 
@@ -256,7 +256,7 @@ docker-compose -f docker-compose.prod.yml up -d --build
 
 For technical support or questions:
 - **Repository**: https://github.com/TawfiqulBari/Infosonik-App-01
-- **Deployment**: http://62.169.16.31:8080
+- **Deployment**: https://infsnk-app-01.tawfiqulbari.work
 - **Status**: ✅ Successfully Deployed and Running
 
 ---

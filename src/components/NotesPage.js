@@ -25,6 +25,7 @@ import {
   ListItemIcon,
   Fab,
 } from '@mui/material';
+import api from '../utils/api';
 import {
   Add,
   Edit,
@@ -74,7 +75,7 @@ export default function NotesPage() {
 
   const fetchNotes = async () => {
     try {
-      const response = await axios.get('/notes/');
+const response = await api.get('/notes/');
       setNotes(response.data);
     } catch (error) {
       toast.error('Failed to fetch notes');
@@ -86,7 +87,7 @@ export default function NotesPage() {
 
   const fetchFiles = async () => {
     try {
-      const response = await axios.get('/files/');
+const response = await api.get('/files/');
       setFiles(response.data);
     } catch (error) {
       console.error('Fetch files error:', error);
@@ -114,10 +115,10 @@ export default function NotesPage() {
   const handleSubmit = async () => {
     try {
       if (editingNote) {
-        await axios.put(`/notes/${editingNote.id}`, formData);
+await api.put(`/notes/${editingNote.id}`, formData);
         toast.success('Note updated successfully');
       } else {
-        await axios.post('/notes/', formData);
+await api.post('/notes/', formData);
         toast.success('Note created successfully');
       }
       fetchNotes();
@@ -131,7 +132,7 @@ export default function NotesPage() {
   const handleDelete = async (noteId) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       try {
-        await axios.delete(`/notes/${noteId}`);
+await api.delete(`/notes/${noteId}`);
         toast.success('Note deleted successfully');
         fetchNotes();
       } catch (error) {
@@ -171,7 +172,7 @@ export default function NotesPage() {
       formData.append('file', file);
 
       try {
-        const response = await axios.post('/files/upload', formData, {
+const response = await api.post('/files/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         
