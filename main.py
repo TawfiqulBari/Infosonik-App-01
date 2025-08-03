@@ -1703,6 +1703,12 @@ async def send_chat_message(
         "timestamp": datetime.utcnow().isoformat()
     }
 
+# Admin helper function
+def require_admin(current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin and current_user.email != 'tawfiqul.bari@infosonik.com':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
 # Leave Application endpoints
 @app.post("/leave/apply", response_model=LeaveApplicationResponse)
 async def apply_for_leave(
@@ -1995,11 +2001,6 @@ async def approve_convenience_bill(
     return {"message": f"Convenience bill {approval_request.status} successfully"}
 
 # Admin endpoints
-def require_admin(current_user: User = Depends(get_current_user)):
-    if not current_user.is_admin and current_user.email != 'tawfiqul.bari@infosonik.com':
-        raise HTTPException(status_code=403, detail="Admin access required")
-    return current_user
-
 @app.get("/admin/users")
 async def get_all_users(
     admin_user: User = Depends(require_admin),
