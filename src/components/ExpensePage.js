@@ -63,7 +63,7 @@ export default function ExpensePage() {
   };
 
   const handleSubmit = async () => {
-    if (!form.week_start_date || !form.week_end_date || !form.total_amount || !form.description) {
+    if (!form.bill_date || !form.total_amount || !form.description) {
       toast.error('Please fill out all fields');
       return;
     }
@@ -72,8 +72,7 @@ export default function ExpensePage() {
       const submitData = {
         ...form,
         total_amount: Math.round(form.total_amount * 100), // Convert to cents
-        week_start_date: new Date(form.week_start_date).toISOString(),
-        week_end_date: new Date(form.week_end_date).toISOString()
+        bill_date: new Date(form.bill_date).toISOString()
       };
 
       await axios.post('/bills/submit', submitData);
@@ -245,7 +244,7 @@ export default function ExpensePage() {
                   {bills.map((bill) => (
                     <TableRow key={bill.id}>
                       <TableCell>
-                        {format(new Date(bill.week_start_date), 'MMM dd')} - {format(new Date(bill.week_end_date), 'MMM dd, yyyy')}
+                        {format(new Date(bill.bill_date), 'MMM dd, yyyy')}
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -298,24 +297,16 @@ export default function ExpensePage() {
               <TextField
                 fullWidth
                 type="date"
-                label="Week Start Date"
+                label="Bill Date"
                 InputLabelProps={{ shrink: true }}
-                value={form.week_start_date}
-                onChange={(e) => setForm({ ...form, week_start_date: e.target.value })}
+                value={form.bill_date}
+                onChange={(e) => setForm({ ...form, bill_date: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 type="date"
-                label="Week End Date"
-                InputLabelProps={{ shrink: true }}
-                value={form.week_end_date}
-                onChange={(e) => setForm({ ...form, week_end_date: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
                 fullWidth
                 type="number"
                 label="Total Amount"
