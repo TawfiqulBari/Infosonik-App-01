@@ -316,7 +316,20 @@ async def google_auth():
 @app.get("/auth/callback")
 async def google_callback(code: str, db: Session = Depends(get_db)):
     flow = get_google_oauth_flow()
-    flow.fetch_token(code=code)
+    try:
+        flow.fetch_token(code=code)
+    except Exception as e:
+        # Handle OAuth scope warnings that are treated as exceptions
+        if "Scope has changed" in str(e) or "Warning: Scope has changed" in str(e):
+            print(f"OAuth scope warning handled: {e}")
+            # Re-try the token fetch ignoring warnings
+            import warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                flow.fetch_token(code=code)
+        else:
+            print(f"OAuth error: {e}")
+            raise HTTPException(status_code=400, detail=f"OAuth authentication failed: {str(e)}")
     
     credentials = flow.credentials
     
