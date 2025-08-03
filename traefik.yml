@@ -1,0 +1,38 @@
+# Traefik static configuration
+api:
+  dashboard: true
+  insecure: false  # Set to true for development
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: webapp-01_app-network
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: your-email@example.com  # Change this
+      storage: /letsencrypt/acme.json
+      tlsChallenge: {}
+
+# Optional: Enable access logs
+# accessLog:
+#   filePath: "/var/log/traefik/access.log"
+
+# Optional: Enable Traefik logs
+# log:
+#   level: INFO
+#   filePath: "/var/log/traefik/traefik.log"

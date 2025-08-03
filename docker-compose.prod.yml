@@ -1,6 +1,32 @@
 version: '3.8'
 
 services:
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.dashboard=false"  # Disable dashboard in production
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # SSL/TLS configuration
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - app-network
+    restart: unless-stopped
+
   db:
     image: postgres:15
     environment:
@@ -15,20 +41,31 @@ services:
 
   app:
     build: .
-    ports:
-      - "8080:8000"
     environment:
       DATABASE_URL: postgresql://user:${DB_PASSWORD:-securepassword123}@db:5432/notesapp
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     depends_on:
       - db
+      - traefik
     networks:
       - app-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      # Main application routes
+      - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.app.loadbalancer.server.port=8000"
+      # Google Chat webhook route
+      - "traefik.http.routers.chat-webhook.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/webhook/chat`)"
+      - "traefik.http.routers.chat-webhook.entrypoints=websecure"
+      - "traefik.http.routers.chat-webhook.tls.certresolver=letsencrypt"
 
 volumes:
   postgres_data:
+  letsencrypt:
 
 networks:
   app-network:
