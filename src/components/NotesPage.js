@@ -75,7 +75,7 @@ export default function NotesPage() {
 
   const fetchNotes = async () => {
     try {
-const response = await api.get('/notes/');
+      const response = await api.get('/notes/');
       setNotes(response.data);
     } catch (error) {
       toast.error('Failed to fetch notes');
@@ -87,7 +87,7 @@ const response = await api.get('/notes/');
 
   const fetchFiles = async () => {
     try {
-const response = await api.get('/files/');
+      const response = await api.get('/files/');
       setFiles(response.data);
     } catch (error) {
       console.error('Fetch files error:', error);
@@ -115,10 +115,10 @@ const response = await api.get('/files/');
   const handleSubmit = async () => {
     try {
       if (editingNote) {
-await api.put(`/notes/${editingNote.id}`, formData);
+        await api.put(`/notes/${editingNote.id}`, formData);
         toast.success('Note updated successfully');
       } else {
-await api.post('/notes/', formData);
+        await api.post('/notes/', formData);
         toast.success('Note created successfully');
       }
       fetchNotes();
@@ -132,7 +132,7 @@ await api.post('/notes/', formData);
   const handleDelete = async (noteId) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       try {
-await api.delete(`/notes/${noteId}`);
+        await api.delete(`/notes/${noteId}`);
         toast.success('Note deleted successfully');
         fetchNotes();
       } catch (error) {
@@ -172,7 +172,7 @@ await api.delete(`/notes/${noteId}`);
       formData.append('file', file);
 
       try {
-const response = await api.post('/files/upload', formData, {
+        const response = await api.post('/files/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         

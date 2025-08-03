@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import api from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -19,8 +20,6 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     if (token) {
-import api from '../utils/api';
-
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchCurrentUser();
     } else {
@@ -30,7 +29,7 @@ import api from '../utils/api';
 
   const fetchCurrentUser = async () => {
     try {
-const response = await api.get('/auth/me');
+      const response = await api.get('/auth/me');
       setUser(response.data);
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -42,7 +41,7 @@ const response = await api.get('/auth/me');
 
   const login = async () => {
     try {
-const response = await api.get('/auth/google');
+      const response = await api.get('/auth/google');
       window.location.href = response.data.auth_url;
     } catch (error) {
       toast.error('Failed to initiate Google login');
@@ -52,7 +51,7 @@ const response = await api.get('/auth/google');
 
   const handleCallback = async (code) => {
     try {
-const response = await api.get(`/auth/callback?code=${code}`);
+      const response = await api.get(`/auth/callback?code=${code}`);
       const { access_token, user: userData } = response.data;
       
       localStorage.setItem('token', access_token);
@@ -72,7 +71,7 @@ const response = await api.get(`/auth/callback?code=${code}`);
 
   const logout = async () => {
     try {
-await api.post('/auth/logout');
+      await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -86,7 +85,7 @@ await api.post('/auth/logout');
 
   const updatePreferences = async (preferences) => {
     try {
-await api.put('/user/preferences', preferences);
+      await api.put('/user/preferences', preferences);
       setUser(prevUser => ({
         ...prevUser,
         preferences: { ...prevUser.preferences, ...preferences }
