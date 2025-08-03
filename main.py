@@ -133,8 +133,8 @@ class ConvenienceBill(Base):
     __tablename__ = "convenience_bills"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, index=True)
-    week_start_date = Column(DateTime)  # Start of the week
-    week_end_date = Column(DateTime)    # End of the week
+    bill_date = Column(DateTime)  # Date of the bill
+    # Removed week_end_date, now using single bill_date
     total_amount = Column(Integer)      # Amount in cents
     description = Column(Text)
     receipt_file_id = Column(Integer, nullable=True)  # Reference to FileAttachment
@@ -373,8 +373,8 @@ class LeaveApprovalRequest(BaseModel):
     comments: Optional[str] = None
 
 class ConvenienceBillCreate(BaseModel):
-    week_start_date: datetime
-    week_end_date: datetime
+    bill_date: datetime
+    # Removed week_end_date
     total_amount: int  # Amount in cents
     description: str
     receipt_file_id: Optional[int] = None
@@ -383,8 +383,8 @@ class ConvenienceBillResponse(BaseModel):
     id: int
     user_id: int
     user_name: str
-    week_start_date: datetime
-    week_end_date: datetime
+    bill_date: datetime
+    # Removed week_end_date
     total_amount: int
     description: str
     receipt_file_id: Optional[int] = None
@@ -563,6 +563,25 @@ def recognize_speech(audio_file, language='en-US'):
         return "Could not request results"
 
 # Gmail functions
+def get_credentials_from_session(session):
+    """Create proper Google credentials from user session"""
+    if not session or not session.access_token:
+        return None
+    
+    credentials = Credentials(
+        token=session.access_token,
+        refresh_token=session.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET
+    )
+    
+    # Set expiry if available
+    if session.expires_at:
+        credentials.expiry = session.expires_at
+    
+    return credentials
+
 def get_gmail_service(credentials):
     return build('gmail', 'v1', credentials=credentials)
 
@@ -668,7 +687,7 @@ def fetch_google_calendar_events(credentials, time_min=None, time_max=None):
 @app.get("/auth/google")
 async def google_auth():
     flow = get_google_oauth_flow()
-    auth_url, _ = flow.authorization_url(prompt='consent')
+    auth_url, _ = flow.authorization_url(prompt='consent', access_type='offline')
     return {"auth_url": auth_url}
 
 @app.get("/auth/callback")
@@ -818,7 +837,7 @@ async def upload_file(
     session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
     if session and session.access_token:
         try:
-            credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+            credentials = get_credentials_from_session(session)
             google_drive_id = upload_to_drive(str(file_path), file.filename, credentials)
         except Exception as e:
             print(f"Failed to upload to Google Drive: {e}")
@@ -1044,7 +1063,7 @@ async def create_event(
     
     if session and session.access_token:
         try:
-            credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+            credentials = get_credentials_from_session(session)
             google_event_id = create_calendar_event(event, credentials)
         except Exception as e:
             print(f"Failed to create Google Calendar event: {e}")
@@ -1131,7 +1150,7 @@ async def get_events(
     session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
     if session and session.access_token:
         try:
-            credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+            credentials = get_credentials_from_session(session)
             google_events = fetch_google_calendar_events(credentials)
             
             # Add Google Calendar events that aren't already in our database
@@ -1200,7 +1219,7 @@ async def share_event(
         return {"message": "Event shared locally (Google Calendar sharing requires authentication)"}
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         service = build('calendar', 'v3', credentials=credentials)
         
         if event.google_event_id:
@@ -1291,7 +1310,7 @@ async def create_backup(
     
     # Upload to Google Drive
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         backup_drive_id = upload_to_drive(str(backup_path), backup_filename, credentials)
         
         # Clean up local file
@@ -1316,7 +1335,7 @@ async def restore_backup(
         raise HTTPException(status_code=400, detail="Google Drive access required")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         backup_data = download_from_drive(restore_request.backup_id, credentials)
         backup_json = json.loads(backup_data.decode('utf-8'))
         
@@ -1364,7 +1383,7 @@ async def get_drive_files(current_user: User = Depends(get_current_user), db: Se
         raise HTTPException(status_code=400, detail="Google Drive access required")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         # Refresh token if needed
         if credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
@@ -1394,7 +1413,7 @@ async def download_drive_file(
         raise HTTPException(status_code=400, detail="Google Drive access required")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         file_data = download_from_drive(file_id, credentials)
         
         # Get file metadata for filename
@@ -1421,7 +1440,7 @@ async def share_drive_file(
         raise HTTPException(status_code=400, detail="Google Drive access required")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         service = get_drive_service(credentials)
         
         # Share file with domain
@@ -1455,7 +1474,7 @@ async def get_gmail_messages(
         raise HTTPException(status_code=400, detail="Gmail access requires authentication")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         # Refresh token if needed
         if credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
@@ -1503,7 +1522,7 @@ async def get_gmail_message(
         raise HTTPException(status_code=400, detail="Gmail access requires authentication")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         service = get_gmail_service(credentials)
         
         message = service.users().messages().get(
@@ -1548,7 +1567,7 @@ async def mark_message_read(
         raise HTTPException(status_code=400, detail="Gmail access requires authentication")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         service = get_gmail_service(credentials)
         
         # Remove UNREAD label
@@ -1574,7 +1593,7 @@ async def send_email(
         raise HTTPException(status_code=400, detail="Gmail access requires authentication")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         service = get_gmail_service(credentials)
         
         # Create email message
@@ -1612,7 +1631,7 @@ async def reply_to_email(
         raise HTTPException(status_code=400, detail="Gmail access requires authentication")
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         service = get_gmail_service(credentials)
         
         # Get original message for thread info
@@ -1658,7 +1677,7 @@ async def get_unread_count(
         return {"count": 0}
     
     try:
-        credentials = Credentials(token=session.access_token, refresh_token=session.refresh_token)
+        credentials = get_credentials_from_session(session)
         service = get_gmail_service(credentials)
         
         # Get count of unread messages
@@ -1894,8 +1913,8 @@ async def submit_convenience_bill(
 ):
     convenience_bill = ConvenienceBill(
         user_id=current_user.id,
-        week_start_date=bill_request.week_start_date,
-        week_end_date=bill_request.week_end_date,
+        bill_date=bill_request.bill_date,
+        # week_end_date removed
         total_amount=bill_request.total_amount,
         description=bill_request.description,
         receipt_file_id=bill_request.receipt_file_id
@@ -1916,8 +1935,7 @@ async def submit_convenience_bill(
         id=convenience_bill.id,
         user_id=convenience_bill.user_id,
         user_name=current_user.name,
-        week_start_date=convenience_bill.week_start_date,
-        week_end_date=convenience_bill.week_end_date,
+        bill_date=convenience_bill.bill_date,
         total_amount=convenience_bill.total_amount,
         description=convenience_bill.description,
         receipt_file_id=convenience_bill.receipt_file_id,
@@ -1958,8 +1976,7 @@ async def get_my_convenience_bills(
             id=bill.id,
             user_id=bill.user_id,
             user_name=current_user.name,
-            week_start_date=bill.week_start_date,
-            week_end_date=bill.week_end_date,
+            bill_date=bill.bill_date,
             total_amount=bill.total_amount,
             description=bill.description,
             receipt_file_id=bill.receipt_file_id,
@@ -1999,8 +2016,7 @@ async def get_pending_convenience_bills(
             id=bill.id,
             user_id=bill.user_id,
             user_name=user.name if user else "Unknown User",
-            week_start_date=bill.week_start_date,
-            week_end_date=bill.week_end_date,
+            bill_date=bill.bill_date,
             total_amount=bill.total_amount,
             description=bill.description,
             receipt_file_id=bill.receipt_file_id,
@@ -2114,7 +2130,7 @@ async def update_user(
 @app.post("/sales/meddpicc", response_model=MEDDPICCResponse)
 async def create_meddpicc(
     meddpicc_data: MEDDPICCCreate,
-    current_user: User = Depends(require_permission("manage_sales_data")),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     new_meddpicc = MEDDPICC(
@@ -2138,7 +2154,7 @@ async def create_meddpicc(
 
 @app.get("/sales/meddpicc", response_model=List[MEDDPICCResponse])
 async def list_meddpicc(
-    current_user: User = Depends(require_permission("view_sales_data")),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     meddpiccs = db.query(MEDDPICC).filter(MEDDPICC.user_id == current_user.id).all()
@@ -2148,7 +2164,7 @@ async def list_meddpicc(
 @app.post("/sales/funnel", response_model=SalesFunnelResponse)
 async def create_sales_funnel(
     funnel_data: SalesFunnelCreate,
-    current_user: User = Depends(require_permission("manage_sales_data")),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     new_funnel = SalesFunnel(
@@ -2169,7 +2185,7 @@ async def create_sales_funnel(
 
 @app.get("/sales/funnel", response_model=List[SalesFunnelResponse])
 async def list_sales_funnel(
-    current_user: User = Depends(require_permission("view_sales_data")),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     funnels = db.query(SalesFunnel).filter(SalesFunnel.user_id == current_user.id).all()
