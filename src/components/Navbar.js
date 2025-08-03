@@ -28,6 +28,9 @@ import {
   Chat,
   AdminPanelSettings,
   Email,
+  TrendingUp,
+  EventAvailable,
+  Receipt,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -38,10 +41,13 @@ const navigation = [
   { name: 'Calendar', href: '/calendar', icon: Event },
   { name: 'Files', href: '/files', icon: Folder },
   { name: 'Drive', href: '/drive', icon: CloudQueue },
+  { name: 'Sales', href: '/sales', icon: TrendingUp },
+  { name: 'Leave', href: '/leave', icon: EventAvailable },
+  { name: 'Expenses', href: '/expenses', icon: Receipt },
   { name: 'Chat', href: '/chat', icon: Chat },
+  { name: 'Email', href: '/email', icon: Email },
   { name: 'Backup', href: '/backup', icon: Backup },
   { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Email', href: '/email', icon: Email },
 ];
 
 export default function Navbar() {

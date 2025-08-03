@@ -19,6 +19,9 @@ import DrivePage from './components/DrivePage';
 import ChatPage from './components/ChatPage';
 import AdminPage from './components/AdminPage';
 import EmailPage from './components/EmailPage';
+import SalesPage from './components/SalesPage';
+import LeavePage from './components/LeavePage';
+import ExpensePage from './components/ExpensePage';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -172,11 +175,14 @@ function AppContent() {
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/files" element={<FilesPage />} />
                 <Route path="/drive" element={<DrivePage />} />
+                <Route path="/sales" element={<SalesPage />} />
+                <Route path="/leave" element={<LeavePage />} />
+                <Route path="/expenses" element={<ExpensePage />} />
                 <Route path="/chat" element={<ChatPage />} />
+                <Route path="/email" element={<EmailPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/backup" element={<BackupPage />} />
                 <Route path="/admin" element={<AdminPage />} />
-                <Route path="/email" element={<EmailPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Box>
