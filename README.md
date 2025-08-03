@@ -1,3 +1,7 @@
+### **New Functionalities**
+- **Sales Role Enhancements**: Added `manage_sales_data` permission for Sales role users to manage MEDDPICC and Sales Funnel data.
+- **Dashboard Data Integrity**: Ensured alignment between database models and Pydantic schemas for consistent data handling.
+
 # 🏢 Infosonik Systems Limited - Notes & Calendar Platform
 
 ![Infosonik Logo](public/infosonik-logo.svg)
@@ -49,6 +53,13 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 - **🌙 Dark Mode**: Professional dark theme capability
 - **💾 Backup/Restore**: Data backup and restoration functionality
 - **🐳 Containerized**: Full Docker deployment with PostgreSQL database
+- **👥 Role-Based Access Control**: Comprehensive permission system with Admin, HR, Accounts, Sales, and Technical roles
+- **💼 Sales Management**: MEDDPICC analysis and Sales Funnel tracking for sales team members
+- **📊 Admin Dashboard**: System statistics and user management for administrators
+- **📧 Gmail Integration**: Email management with read, send, and reply functionality
+- **💾 Google Drive**: File sharing and document management through Google Drive API
+- **📋 Leave Management**: Employee leave application and approval workflow
+- **💳 Expense Management**: Convenience bill submission and approval system
 
 ## 📊 **Current Deployment Status**
 
@@ -233,10 +244,42 @@ Once the application is running, visit:
 
 ### Main Endpoints
 
+#### **Core Functionality**
 - `POST /notes/` - Create a new note
 - `GET /notes/` - List all notes
 - `POST /events/` - Create calendar event
 - `POST /voice-to-text/` - Convert speech to text
+
+#### **Sales Management** (Role-based access)
+- `POST /sales/meddpicc` - Create MEDDPICC analysis
+- `GET /sales/meddpicc` - List MEDDPICC records
+- `POST /sales/funnel` - Create sales funnel entry
+- `GET /sales/funnel` - List sales funnel records
+
+#### **Admin Management** (Admin only)
+- `GET /admin/users` - List all users
+- `GET /admin/stats` - Get system statistics
+- `POST /admin/roles` - Create new role
+- `GET /admin/roles` - List all roles
+- `PUT /admin/users/{user_id}/role` - Assign role to user
+
+#### **Leave Management**
+- `POST /leave/apply` - Submit leave application
+- `GET /leave/my-applications` - Get user's leave applications
+- `GET /leave/pending` - Get pending leave applications (Admin/HR)
+- `POST /leave/{application_id}/approve` - Approve/reject leave (Admin/HR)
+
+#### **Expense Management**
+- `POST /bills/submit` - Submit convenience bill
+- `GET /bills/my-bills` - Get user's submitted bills
+- `GET /bills/pending` - Get pending bills (Admin/Accounts)
+- `POST /bills/{bill_id}/approve` - Approve/reject bill (Admin/Accounts)
+
+#### **Google Integrations**
+- `GET /gmail/messages` - Get Gmail messages
+- `POST /gmail/send` - Send email
+- `GET /drive/files` - List Google Drive files
+- `POST /drive/files/{file_id}/share` - Share Drive file
 
 ## 🗄️ Database Schema
 
