@@ -97,13 +97,30 @@ export default function AuthProvider({ children }) {
     }
   };
 
-  // Handle OAuth callback on page load
+// Handle OAuth callback from URL parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code && !token) {
-      handleCallback(code);
+    const authToken = urlParams.get('token');
+    const userName = urlParams.get('user');
+    const userEmail = urlParams.get('email');
+    const authCode = urlParams.get('code');
+
+    // Handle direct token from redirect
+    if (authToken && !token) {
+      localStorage.setItem('token', authToken);
+      setToken(authToken);
+      setUser({ name: decodeURIComponent(userName), email: decodeURIComponent(userEmail) });
+      api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+
+      toast.success(`Welcome, ${decodeURIComponent(userName)}!`);
+
+      // Clean up URL
+      window.history.replaceState({}, document.title, '/');
+      setLoading(false);
+    } 
+    // Handle OAuth code callback (fallback)
+    else if (authCode && !token) {
+      handleCallback(authCode);
     }
   }, []);
 

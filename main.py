@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, LargeBinary
 from sqlalchemy.ext.declarative import declarative_base
@@ -381,17 +381,9 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "name": user.name,
-            "profile_picture": user.profile_picture,
-            "preferences": json.loads(user.preferences) if user.preferences else {}
-        }
-    }
+    # Redirect to the main app with token in URL fragment for React to handle
+    redirect_url = f"/?token={access_token}&user={user.name}&email={user.email}"
+    return RedirectResponse(url=redirect_url)
 
 @app.get("/auth/me", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
