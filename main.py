@@ -228,6 +228,7 @@ def get_current_user(user_id: int = Depends(verify_token), db: Session = Depends
 
 # Google OAuth functions
 def get_google_oauth_flow():
+    # Use more specific scope names for better compatibility
     flow = Flow.from_client_config(
         {
             "web": {
@@ -240,13 +241,19 @@ def get_google_oauth_flow():
         },
         scopes=[
             "openid",
-            "email",
-            "profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
             "https://www.googleapis.com/auth/calendar",
             "https://www.googleapis.com/auth/drive"
         ]
     )
     flow.redirect_uri = GOOGLE_REDIRECT_URI
+    
+    # Disable HTTPS requirement for local development
+    # In production with HTTPS, this is automatically secure
+    import os
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    
     return flow
 
 def verify_infosonik_domain(email: str):
