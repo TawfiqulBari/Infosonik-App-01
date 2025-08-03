@@ -5,6 +5,8 @@ import api from '../utils/api';
 
 const AuthContext = createContext();
 
+export { AuthContext };
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -126,6 +128,7 @@ export default function AuthProvider({ children }) {
 
   const value = {
     user,
+    token,
     loading,
     login,
     logout,
