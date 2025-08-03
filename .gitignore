@@ -91,3 +91,4 @@ dmypy.json
 # Local configuration
 config.local.js
 config.local.json
+.env.prod
