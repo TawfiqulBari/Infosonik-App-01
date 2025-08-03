@@ -47,12 +47,24 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`infsnk-app-01.tawfiqulbari.work`) || Host(`localhost`) || Host(`127.0.0.1`)"
-      - "traefik.http.routers.app.entrypoints=web"
+      # HTTP router (redirects to HTTPS)
+      - "traefik.http.routers.app-http.rule=Host(`infsnk-app-01.tawfiqulbari.work`) || Host(`localhost`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.app-http.entrypoints=web"
+      - "traefik.http.routers.app-http.middlewares=https-redirect"
+      # HTTPS router
+      - "traefik.http.routers.app-https.rule=Host(`infsnk-app-01.tawfiqulbari.work`) || Host(`localhost`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.app-https.entrypoints=websecure"
+      - "traefik.http.routers.app-https.tls=true"
       - "traefik.http.services.app.loadbalancer.server.port=8000"
-      # Google Chat webhook route
-      - "traefik.http.routers.chat.rule=Host(`infsnk-app-01.tawfiqulbari.work`) && PathPrefix(`/webhook/chat`)"
-      - "traefik.http.routers.chat.entrypoints=web"
+      # HTTPS redirect middleware
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.permanent=true"
+      # Google Chat webhook routes
+      - "traefik.http.routers.chat-http.rule=Host(`infsnk-app-01.tawfiqulbari.work`) && PathPrefix(`/webhook/chat`)"
+      - "traefik.http.routers.chat-http.entrypoints=web"
+      - "traefik.http.routers.chat-https.rule=Host(`infsnk-app-01.tawfiqulbari.work`) && PathPrefix(`/webhook/chat`)"
+      - "traefik.http.routers.chat-https.entrypoints=websecure"
+      - "traefik.http.routers.chat-https.tls=true"
 
 volumes:
   postgres_data:

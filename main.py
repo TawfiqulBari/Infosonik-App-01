@@ -2392,6 +2392,25 @@ if os.path.exists("static"):
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
         # Serve React app for all routes not handled by API
-        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("redoc"):
+        if (
+            full_path.startswith("api/") or 
+            full_path.startswith("docs") or 
+            full_path.startswith("redoc") or
+            full_path.startswith("auth/") or
+            full_path.startswith("notes/") or
+            full_path.startswith("events/") or
+            full_path.startswith("files/") or
+            full_path.startswith("admin/") or
+            full_path.startswith("leave/") or
+            full_path.startswith("bills/") or
+            full_path.startswith("sales/") or
+            full_path.startswith("user/") or
+            full_path.startswith("backup/") or
+            full_path.startswith("voice-to-text/") or
+            full_path.startswith("drive/") or
+            full_path.startswith("gmail/") or
+            full_path.startswith("chat/") or
+            full_path.startswith("webhook/")
+        ):
             raise HTTPException(status_code=404, detail="Not found")
         return FileResponse('static/index.html')
