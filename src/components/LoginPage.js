@@ -109,7 +109,7 @@ export default function LoginPage() {
                   sx={{
                     fontSize: '28px',
                     fontWeight: 900,
-                    color: 'white',
+color: '#ffffffcc',
                     fontFamily: 'monospace',
                     textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                     zIndex: 1,
@@ -210,7 +210,6 @@ export default function LoginPage() {
             
             <Typography 
               variant="body1" 
-              color="textSecondary" 
               sx={{ 
                 mb: 4, 
                 maxWidth: 420, 
@@ -218,6 +217,8 @@ export default function LoginPage() {
                 textAlign: 'center',
                 lineHeight: 1.6,
                 fontSize: '0.95rem',
+                color: '#4a5568',
+                fontWeight: 500,
               }}
             >
               Professional workspace for Infosonik team collaboration. Manage notes, 

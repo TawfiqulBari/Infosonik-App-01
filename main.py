@@ -523,11 +523,6 @@ def get_google_oauth_flow():
     )
     flow.redirect_uri = GOOGLE_REDIRECT_URI
     
-    # Disable HTTPS requirement for local development
-    # In production with HTTPS, this is automatically secure
-    import os
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-    
     return flow
 
 def verify_infosonik_domain(email: str):
@@ -677,22 +672,39 @@ async def google_auth():
     return {"auth_url": auth_url}
 
 @app.get("/auth/callback")
-async def google_callback(code: str, db: Session = Depends(get_db)):
+async def google_callback(code: str, state: str = None, db: Session = Depends(get_db)):
+    if not code:
+        raise HTTPException(status_code=400, detail="Authorization code not provided")
+    
     flow = get_google_oauth_flow()
     try:
+        # Fetch the token with the authorization code
         flow.fetch_token(code=code)
     except Exception as e:
-        # Handle OAuth scope warnings that are treated as exceptions
-        if "Scope has changed" in str(e) or "Warning: Scope has changed" in str(e):
-            print(f"OAuth scope warning handled: {e}")
-            # Re-try the token fetch ignoring warnings
-            import warnings
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                flow.fetch_token(code=code)
+        error_msg = str(e).lower()
+        print(f"OAuth error details: {e}")
+        
+        # Handle specific OAuth errors
+        if "invalid_grant" in error_msg:
+            raise HTTPException(
+                status_code=400, 
+                detail="OAuth grant expired or invalid. Please try logging in again."
+            )
+        elif "invalid_request" in error_msg:
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid OAuth request. Please try logging in again."
+            )
+        elif "unauthorized_client" in error_msg:
+            raise HTTPException(
+                status_code=400, 
+                detail="OAuth client not authorized. Please contact administrator."
+            )
         else:
-            print(f"OAuth error: {e}")
-            raise HTTPException(status_code=400, detail=f"OAuth authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=400, 
+                detail="OAuth authentication failed. Please try again."
+            )
     
     credentials = flow.credentials
     
