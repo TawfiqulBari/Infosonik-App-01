@@ -75,7 +75,7 @@ GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 # Production Domain (for SSL)
-DOMAIN_NAME=tawfiqulbari.work
+DOMAIN_NAME=infsnk-app-01.tawfiqulbari.work
 ACME_EMAIL=baritechsys@gmail.com
 ```
 
@@ -116,7 +116,7 @@ docker-compose -f docker-compose.prod.yml logs traefik
 ### Check SSL Certificate Status
 ```bash
 # Check certificate details
-openssl s_client -connect tawfiqulbari.work:443 -servername tawfiqulbari.work
+openssl s_client -connect infsnk-app-01.tawfiqulbari.work:443 -servername infsnk-app-01.tawfiqulbari.work
 ```
 
 ### Verify Webhook Endpoint
