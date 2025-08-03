@@ -14,13 +14,43 @@ import {
   Grid,
   Chip,
   CircularProgress,
+  IconButton,
+  Tooltip,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Avatar,
+  Paper,
+  Fab,
+  Badge,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
-import { Add, Event as EventIcon, Refresh } from '@mui/icons-material';
+import {
+  Add,
+  Event as EventIcon,
+  Refresh,
+  Share,
+  Person,
+  CalendarToday,
+  AccessTime,
+  Description,
+  Google,
+  Edit,
+  Delete,
+  Visibility,
+} from '@mui/icons-material';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
-import { format } from 'date-fns';
+import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { AuthContext } from '../contexts/AuthContext';
 
 export default function CalendarPage() {
@@ -87,6 +117,25 @@ export default function CalendarPage() {
     }
   };
 
+  const shareEvent = async (eventId) => {
+    if (!token) {
+      toast.error('Please log in to share events');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/events/${eventId}/share`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      toast.success(response.data.message || 'Event shared successfully');
+    } catch (error) {
+      toast.error('Failed to share event');
+      console.error('Share event error:', error);
+    }
+  };
+
   const eventsForSelectedDate = events.filter(event =>
     format(new Date(event.start_time), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
   );
@@ -143,13 +192,26 @@ export default function CalendarPage() {
               ) : (
                 eventsForSelectedDate.map((event) => (
                   <Box key={event.id} sx={{ mb: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <Typography variant="subtitle1">{event.title}</Typography>
-                      {event.google_event_id && event.id < 0 && (
-                        <Chip size="small" label="Google" color="primary" variant="outlined" />
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="subtitle1">{event.title}</Typography>
+                        {event.google_event_id && event.id < 0 && (
+                          <Chip size="small" label="Google" color="primary" variant="outlined" />
+                        )}
+                      </Box>
+                      {event.id > 0 && (
+                        <Tooltip title="Share Event">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => shareEvent(event.id)}
+                            sx={{ color: 'primary.main' }}
+                          >
+                            <Share fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       )}
                     </Box>
-                    <Typography variant="body2" color="textSecondary">
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
                       {event.description || 'No description'}
                     </Typography>
                     <Typography variant="caption">

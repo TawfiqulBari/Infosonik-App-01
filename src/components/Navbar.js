@@ -24,6 +24,10 @@ import {
   Logout,
   DarkMode,
   LightMode,
+  CloudQueue,
+  Chat,
+  AdminPanelSettings,
+  Email,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -33,8 +37,11 @@ const navigation = [
   { name: 'Notes', href: '/notes', icon: Notes },
   { name: 'Calendar', href: '/calendar', icon: Event },
   { name: 'Files', href: '/files', icon: Folder },
+  { name: 'Drive', href: '/drive', icon: CloudQueue },
+  { name: 'Chat', href: '/chat', icon: Chat },
   { name: 'Backup', href: '/backup', icon: Backup },
   { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Email', href: '/email', icon: Email },
 ];
 
 export default function Navbar() {
@@ -61,7 +68,24 @@ export default function Navbar() {
     <AppBar position="sticky" elevation={0} sx={{ backdropFilter: 'blur(10px)' }}>
       <Toolbar>
         <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-          <Typography
+          {/* Infosonik Logo */}
+          <Box
+            component="img"
+            src="https://www.infosonik.com/wp-content/uploads/2023/03/infosonik-logo-dark.png"
+            alt="Infosonik Logo"
+            sx={{
+              height: 36,
+              width: 'auto',
+              mr: 2,
+              filter: 'brightness(0) invert(1)',
+            }}
+            onError={(e) => {
+              // Fallback to text logo if image fails to load
+              e.target.style.display = 'none';
+            }}
+          />
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Typography
             variant="h6"
             component="div"
             sx={{
@@ -86,6 +110,7 @@ export default function Navbar() {
           >
             SYSTEMS
           </Typography>
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1, flexGrow: 1 }}>
@@ -112,6 +137,24 @@ export default function Navbar() {
               </Button>
             );
           })}
+          {/* Admin Panel for admin users */}
+          {user?.email === 'tawfiqul.bari@infosonik.com' && (
+            <Button
+              startIcon={<AdminPanelSettings />}
+              onClick={() => navigate('/admin')}
+              sx={{
+                color: location.pathname === '/admin' ? 'primary.main' : 'inherit',
+                backgroundColor: location.pathname === '/admin' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+                textTransform: 'none',
+                borderRadius: 2,
+              }}
+            >
+              Admin
+            </Button>
+          )}
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
