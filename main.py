@@ -1709,6 +1709,37 @@ def require_admin(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
 
+# Helper functions for role-based access
+def get_user_role(user: User, db: Session) -> Optional[Role]:
+    """Get the role assigned to a user"""
+    if user.role_id:
+        return db.query(Role).filter(Role.id == user.role_id).first()
+    return None
+
+def user_has_permission(user: User, permission: str, db: Session) -> bool:
+    """Check if user has a specific permission through their role"""
+    role = get_user_role(user, db)
+    if role and role.permissions:
+        permissions = json.loads(role.permissions)
+        return permission in permissions
+    return False
+
+def require_permission(permission: str):
+    """Dependency factory to require specific permission"""
+    def permission_dependency(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+        # Admins have all permissions
+        if current_user.is_admin or current_user.email == 'tawfiqul.bari@infosonik.com':
+            return current_user
+        
+        if not user_has_permission(current_user, permission, db):
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Permission '{permission}' required"
+            )
+        return current_user
+    
+    return permission_dependency
+
 # Leave Application endpoints
 @app.post("/leave/apply", response_model=LeaveApplicationResponse)
 async def apply_for_leave(
@@ -2296,36 +2327,6 @@ async def get_user_role(
         "role": None
     }
 
-# Helper functions for role-based access
-def get_user_role(user: User, db: Session) -> Optional[Role]:
-    """Get the role assigned to a user"""
-    if user.role_id:
-        return db.query(Role).filter(Role.id == user.role_id).first()
-    return None
-
-def user_has_permission(user: User, permission: str, db: Session) -> bool:
-    """Check if user has a specific permission through their role"""
-    role = get_user_role(user, db)
-    if role and role.permissions:
-        permissions = json.loads(role.permissions)
-        return permission in permissions
-    return False
-
-def require_permission(permission: str):
-    """Dependency factory to require specific permission"""
-    def permission_dependency(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-        # Admins have all permissions
-        if current_user.is_admin or current_user.email == 'tawfiqul.bari@infosonik.com':
-            return current_user
-        
-        if not user_has_permission(current_user, permission, db):
-            raise HTTPException(
-                status_code=403, 
-                detail=f"Permission '{permission}' required"
-            )
-        return current_user
-    
-    return permission_dependency
 
 # Initialize default roles
 @app.on_event("startup")
