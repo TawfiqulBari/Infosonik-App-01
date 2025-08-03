@@ -47,11 +47,11 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`localhost`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.app.rule=Host(`infsnk-app-01.tawfiqulbari.work`) || Host(`localhost`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.app.entrypoints=web"
       - "traefik.http.services.app.loadbalancer.server.port=8000"
       # Google Chat webhook route
-      - "traefik.http.routers.chat.rule=Host(`localhost`) && PathPrefix(`/webhook/chat`)"
+      - "traefik.http.routers.chat.rule=Host(`infsnk-app-01.tawfiqulbari.work`) && PathPrefix(`/webhook/chat`)"
       - "traefik.http.routers.chat.entrypoints=web"
 
 volumes:
