@@ -113,3 +113,89 @@
     color: #ffffff !important;
   }
 }
+
+/* Landscape Month View Styling */
+.custom-calendar {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.react-calendar__viewContainer {
+  width: 100% !important;
+}
+
+.react-calendar__month-view__weekdays {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 0 !important;
+}
+
+.react-calendar__month-view__days {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 1px !important;
+  background: #e0e0e0 !important;
+  padding: 1px !important;
+}
+
+.react-calendar__tile {
+  min-height: 80px !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  padding: 8px !important;
+  position: relative !important;
+  border: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+.react-calendar__tile abbr {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 4px !important;
+}
+
+/* Responsive adjustments for landscape view */
+@media (min-width: 768px) {
+  .react-calendar__tile {
+    min-height: 100px !important;
+    padding: 12px !important;
+  }
+  
+  .react-calendar__tile abbr {
+    font-size: 16px !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .react-calendar__tile {
+    min-height: 120px !important;
+    padding: 16px !important;
+  }
+}
+
+/* Event dots for calendar tiles */
+.calendar-event-dots {
+  position: absolute !important;
+  bottom: 4px !important;
+  left: 4px !important;
+  right: 4px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 2px !important;
+}
+
+.calendar-event-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #1976d2 !important;
+}
+
+.calendar-event-dot.google {
+  background: #4285f4 !important;
+}

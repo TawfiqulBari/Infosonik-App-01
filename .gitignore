@@ -97,3 +97,20 @@ config.local.json
 .env.prod
 .env.prod.backup
 .env.production.local
+
+# Environment files
+.env*
+!.env.example
+
+# Migration backup files
+migrations/*.backup*
+*.backup*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Node modules and build
+node_modules/
+build/

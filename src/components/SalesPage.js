@@ -138,7 +138,7 @@ export default function SalesPage() {
     try {
       const submitData = {
         ...funnelForm,
-        amount: funnelForm.amount * 100, // Convert to cents
+        amount: funnelForm.amount * 100, // Convert to paisa (BDT)
         closing_date: new Date(funnelForm.closing_date).toISOString()
       };
       
@@ -166,7 +166,7 @@ export default function SalesPage() {
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Box sx={{ 
-            backgroundColor: `${color}.main`, 
+            backgroundColor: `৳{color}.main`, 
             color: 'white', 
             p: 1, 
             borderRadius: 2, 
@@ -234,7 +234,7 @@ export default function SalesPage() {
           <StatCard
             icon={<AttachMoney />}
             title="Pipeline Value"
-            value={`$${totalValue.toLocaleString()}`}
+            value={`$৳{totalValue.toLocaleString()}`}
             color="success"
           />
         </Grid>
@@ -243,7 +243,7 @@ export default function SalesPage() {
             icon={<TrendingUp />}
             title="Won Deals"
             value={wonDeals}
-            subtitle={`${totalOpportunities > 0 ? Math.round((wonDeals / totalOpportunities) * 100) : 0}% Win Rate`}
+            subtitle={`৳{totalOpportunities > 0 ? Math.round((wonDeals / totalOpportunities) * 100) : 0}% Win Rate`}
             color="secondary"
           />
         </Grid>
@@ -251,7 +251,7 @@ export default function SalesPage() {
           <StatCard
             icon={<Schedule />}
             title="Avg Probability"
-            value={`${avgProbability}%`}
+            value={`৳{avgProbability}%`}
             color="warning"
           />
         </Grid>
@@ -409,7 +409,7 @@ export default function SalesPage() {
                         />
                       </TableCell>
                       <TableCell>{opportunity.probability}%</TableCell>
-                      <TableCell>${(opportunity.amount / 100).toLocaleString()}</TableCell>
+                      <TableCell>৳{(opportunity.amount / 100).toLocaleString()}</TableCell>
                       <TableCell>
                         {format(new Date(opportunity.closing_date), 'MMM dd, yyyy')}
                       </TableCell>

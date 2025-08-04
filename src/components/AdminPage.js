@@ -1,335 +1,443 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Container,
   Typography,
   Box,
-  Card,
-  CardContent,
   Grid,
+  Paper,
+  Tab,
+  Tabs,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Button,
-  Chip,
-  IconButton,
+  Menu,
+  MenuItem,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  DialogTitle,
   TextField,
-  Switch,
-  FormControlLabel,
-  Alert,
-  Tabs,
-  Tab,
+  FormControl,
+  InputLabel,
+  Select,
+  Chip,
+  Card,
+  CardContent,
+  IconButton,
 } from '@mui/material';
 import {
-  AdminPanelSettings,
-  People,
-  Block,
-  CheckCircle,
-  Edit,
-  Delete,
-  Add,
-  BarChart,
-  Settings,
+  GetApp as DownloadIcon,
+  Share as ShareIcon,
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon,
+  Assessment as ReportIcon,
 } from '@mui/icons-material';
+import { TabContext, TabPanel } from '@mui/lab';
+import { AuthContext } from '../contexts/AuthContext';
+import axios from 'axios';
 import { toast } from 'react-toastify';
-import api from '../utils/api';
-import { useAuth } from '../contexts/AuthContext';
+import { format, subDays, subMonths } from 'date-fns';
 
-function TabPanel({ children, value, index, ...other }) {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`admin-tabpanel-${index}`}
-      aria-labelledby={`admin-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
-export default function AdminPage() {
-  const { user, token } = useAuth();
-  const [tabValue, setTabValue] = useState(0);
-  const [users, setUsers] = useState([]);
-  const [stats, setStats] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [editUserDialog, setEditUserDialog] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-
-  // Check if user is admin
-  if (user?.email !== 'tawfiqul.bari@infosonik.com') {
-    return (
-      <Container>
-        <Alert severity="error" sx={{ mt: 4 }}>
-          Access denied. You don't have admin privileges.
-        </Alert>
-      </Container>
-    );
-  }
+function AdminPage() {
+  const { token } = useContext(AuthContext);
+  const [tabValue, setTabValue] = useState('1');
+  const [expenses, setExpenses] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('monthly');
+  const [reportMenuAnchor, setReportMenuAnchor] = useState(null);
+  const [shareMenuAnchor, setShareMenuAnchor] = useState(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
 
   useEffect(() => {
-    if (tabValue === 0) {
-      fetchUsers();
-    } else if (tabValue === 1) {
-      fetchStats();
-    }
-  }, [tabValue]);
+    fetchGroups();
+    fetchExpenses();
+    fetchReports();
+  }, [selectedGroup]);
 
-  const fetchUsers = async () => {
-    setLoading(true);
+  const fetchGroups = async () => {
     try {
-      const response = await api.get('/admin/users', {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.get('/admin/groups', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setUsers(response.data);
+      setGroups(response.data);
     } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('Failed to load users');
-    } finally {
-      setLoading(false);
+      toast.error('Failed to load groups');
     }
   };
 
-  const fetchStats = async () => {
-    setLoading(true);
+  const fetchExpenses = async () => {
     try {
-      const response = await api.get('/admin/stats', {
-        headers: { Authorization: `Bearer ${token}` },
+      let url = '/admin/expenses';
+      if (selectedGroup) {
+        url += `?group=${selectedGroup}`;
+      }
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      setStats(response.data);
+      setExpenses(response.data);
     } catch (error) {
-      console.error('Error fetching stats:', error);
-      toast.error('Failed to load statistics');
-    } finally {
-      setLoading(false);
+      toast.error('Failed to load expenses');
     }
   };
 
-  const toggleUserStatus = async (userId, isActive) => {
+  const fetchReports = async () => {
     try {
-      await api.put(
-        `/admin/users/${userId}/status`,
-        { is_active: !isActive },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success('User status updated');
-      fetchUsers();
+      const response = await axios.get('/admin/reports', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setReports(response.data);
     } catch (error) {
-      console.error('Error updating user status:', error);
-      toast.error('Failed to update user status');
+      toast.error('Failed to load reports');
     }
   };
 
-  const handleEditUser = (user) => {
-    setSelectedUser(user);
-    setEditUserDialog(true);
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
-  const saveUserChanges = async () => {
+  const handleGroupSelect = (event) => {
+    setSelectedGroup(event.target.value);
+  };
+
+  const handlePeriodSelect = (event) => {
+    setSelectedPeriod(event.target.value);
+  };
+
+  const approveExpense = async (expenseId) => {
     try {
-      await api.put(
-        `/admin/users/${selectedUser.id}`,
-        selectedUser,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success('User updated successfully');
-      setEditUserDialog(false);
-      fetchUsers();
+      await axios.post(`/admin/expenses/${expenseId}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Expense approved successfully');
+      fetchExpenses();
     } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error('Failed to update user');
+      toast.error('Failed to approve expense');
+    }
+  };
+
+  const rejectExpense = async (expenseId) => {
+    try {
+      await axios.post(`/admin/expenses/${expenseId}/reject`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Expense rejected successfully');
+      fetchExpenses();
+    } catch (error) {
+      toast.error('Failed to reject expense');
+    }
+  };
+
+  const generateReport = async () => {
+    try {
+      const days = selectedPeriod === 'monthly' ? 30 : selectedPeriod === 'weekly' ? 7 : 1;
+      const startDate = subDays(new Date(), days);
+      const endDate = new Date();
+      
+      const reportData = {
+        group_id: selectedGroup || null,
+        period: selectedPeriod,
+        start_date: format(startDate, 'yyyy-MM-dd'),
+        end_date: format(endDate, 'yyyy-MM-dd'),
+        format: 'pdf'
+      };
+
+      const response = await axios.post('/admin/reports/generate', reportData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      toast.success('Report generated successfully');
+      setReportDialogOpen(false);
+      fetchReports();
+    } catch (error) {
+      toast.error('Failed to generate report');
+    }
+  };
+
+  const downloadReport = async (reportId, format) => {
+    try {
+      const response = await axios.get(`/admin/reports/${reportId}/download?format=${format}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `expense_report.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast.success('Report downloaded successfully');
+    } catch (error) {
+      toast.error('Failed to download report');
+    }
+  };
+
+  const shareReport = async (reportId, method) => {
+    try {
+      const response = await axios.post(`/admin/reports/${reportId}/share`, {
+        method: method
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (method === 'link') {
+        navigator.clipboard.writeText(response.data.share_link);
+        toast.success('Link copied to clipboard');
+      } else {
+        toast.success(`Report shared via ${method}`);
+      }
+      
+      setShareMenuAnchor(null);
+    } catch (error) {
+      toast.error(`Failed to share via ${method}`);
+    }
+  };
+
+  const formatBDT = (paisa) => {
+    const taka = paisa / 100;
+    return `৳${taka.toFixed(2)}`;
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'approved': return 'success';
+      case 'rejected': return 'error';
+      default: return 'warning';
     }
   };
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}
-        >
-          <AdminPanelSettings color="primary" />
-          Admin Panel
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          <ReportIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          Admin Management Panel
         </Typography>
+      </Box>
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-            <Tab label="User Management" icon={<People />} />
-            <Tab label="Statistics" icon={<BarChart />} />
-            <Tab label="System Settings" icon={<Settings />} />
+      <TabContext value={tabValue}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={tabValue} onChange={handleTabChange} aria-label="admin tabs">
+            <Tab label="Expense Approvals" value="1" />
+            <Tab label="Report Generation" value="2" />
+            <Tab label="User Management" value="3" />
           </Tabs>
         </Box>
 
-        <TabPanel value={tabValue} index={0}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6">User Management</Typography>
-                <Button startIcon={<Add />} variant="contained">
-                  Add User
-                </Button>
-              </Box>
-              
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Email</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Created</TableCell>
-                      <TableCell>Actions</TableCell>
+        <TabPanel value="1">
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Filter by Group</InputLabel>
+                <Select value={selectedGroup} label="Filter by Group" onChange={handleGroupSelect}>
+                  <MenuItem value="">
+                    <em>All Groups</em>
+                  </MenuItem>
+                  {groups.map(group => (
+                    <MenuItem key={group.id} value={group.id}>{group.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          <Paper elevation={3}>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Date</TableCell>
+                    <TableCell>User</TableCell>
+                    <TableCell>Group</TableCell>
+                    <TableCell>Amount (BDT)</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {expenses.map(expense => (
+                    <TableRow key={expense.id} hover>
+                      <TableCell>
+                        {format(new Date(expense.bill_date), 'MMM dd, yyyy')}
+                      </TableCell>
+                      <TableCell>{expense.user_name}</TableCell>
+                      <TableCell>{expense.group_name || 'N/A'}</TableCell>
+                      <TableCell>{formatBDT(expense.total_amount)}</TableCell>
+                      <TableCell>
+                        {expense.general_description?.substring(0, 50)}
+                        {expense.general_description?.length > 50 ? '...' : ''}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={expense.status.toUpperCase()}
+                          color={getStatusColor(expense.status)}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {expense.status === 'pending' && (
+                          <>
+                            <IconButton
+                              color="success"
+                              onClick={() => approveExpense(expense.id)}
+                              title="Approve"
+                            >
+                              <ApproveIcon />
+                            </IconButton>
+                            <IconButton
+                              color="error"
+                              onClick={() => rejectExpense(expense.id)}
+                              title="Reject"
+                            >
+                              <RejectIcon />
+                            </IconButton>
+                          </>
+                        )}
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={user.is_active ? 'Active' : 'Inactive'}
-                            color={user.is_active ? 'success' : 'error'}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <IconButton
-                            onClick={() => handleEditUser(user)}
-                            size="small"
-                            color="primary"
-                          >
-                            <Edit />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => toggleUserStatus(user.id, user.is_active)}
-                            size="small"
-                            color={user.is_active ? 'error' : 'success'}
-                          >
-                            {user.is_active ? <Block /> : <CheckCircle />}
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </TabPanel>
 
-        <TabPanel value={tabValue} index={1}>
+        <TabPanel value="2">
           <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={8}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" color="primary">
-                    Total Users
-                  </Typography>
-                  <Typography variant="h3">{stats.total_users || 0}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" color="secondary">
-                    Total Notes
-                  </Typography>
-                  <Typography variant="h3">{stats.total_notes || 0}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" color="success.main">
-                    Total Events
-                  </Typography>
-                  <Typography variant="h3">{stats.total_events || 0}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" color="warning.main">
-                    Total Files
-                  </Typography>
-                  <Typography variant="h3">{stats.total_files || 0}</Typography>
+                  <Typography variant="h6" gutterBottom>Generate Expense Report</Typography>
+                  
+                  <Grid container spacing={2} sx={{ mb: 3 }}>
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Report Period</InputLabel>
+                        <Select value={selectedPeriod} label="Report Period" onChange={handlePeriodSelect}>
+                          <MenuItem value="daily">Daily</MenuItem>
+                          <MenuItem value="weekly">Weekly</MenuItem>
+                          <MenuItem value="monthly">Monthly</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Group Filter</InputLabel>
+                        <Select value={selectedGroup} label="Group Filter" onChange={handleGroupSelect}>
+                          <MenuItem value="">
+                            <em>All Groups</em>
+                          </MenuItem>
+                          {groups.map(group => (
+                            <MenuItem key={group.id} value={group.id}>{group.name}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                  
+                  <Button
+                    variant="contained"
+                    onClick={generateReport}
+                    startIcon={<ReportIcon />}
+                    size="large"
+                  >
+                    Generate Report
+                  </Button>
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
+
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6" gutterBottom>Generated Reports</Typography>
+            
+            <Grid container spacing={2}>
+              {reports.map(report => (
+                <Grid item xs={12} md={6} key={report.id}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6">
+                        {report.report_type} Report - {report.report_period}
+                      </Typography>
+                      <Typography color="textSecondary" gutterBottom>
+                        Generated: {format(new Date(report.generated_at), 'MMM dd, yyyy HH:mm')}
+                      </Typography>
+                      <Typography variant="body2">
+                        Period: {format(new Date(report.start_date), 'MMM dd')} - {format(new Date(report.end_date), 'MMM dd, yyyy')}
+                      </Typography>
+                      
+                      <Box sx={{ mt: 2 }}>
+                        <Button
+                          startIcon={<DownloadIcon />}
+                          onClick={() => downloadReport(report.id, 'pdf')}
+                          sx={{ mr: 1 }}
+                        >
+                          PDF
+                        </Button>
+                        <Button
+                          startIcon={<DownloadIcon />}
+                          onClick={() => downloadReport(report.id, 'excel')}
+                          sx={{ mr: 1 }}
+                        >
+                          Excel
+                        </Button>
+                        <Button
+                          startIcon={<ShareIcon />}
+                          onClick={(e) => {
+                            setSelectedReport(report);
+                            setShareMenuAnchor(e.currentTarget);
+                          }}
+                        >
+                          Share
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
+          <Menu
+            anchorEl={shareMenuAnchor}
+            open={Boolean(shareMenuAnchor)}
+            onClose={() => setShareMenuAnchor(null)}
+          >
+            <MenuItem onClick={() => shareReport(selectedReport?.id, 'email')}>
+              Email
+            </MenuItem>
+            <MenuItem onClick={() => shareReport(selectedReport?.id, 'whatsapp')}>
+              WhatsApp
+            </MenuItem>
+            <MenuItem onClick={() => shareReport(selectedReport?.id, 'drive')}>
+              Save to Drive
+            </MenuItem>
+            <MenuItem onClick={() => shareReport(selectedReport?.id, 'link')}>
+              Copy Link
+            </MenuItem>
+          </Menu>
         </TabPanel>
 
-        <TabPanel value={tabValue} index={2}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                System Settings
-              </Typography>
-              <Alert severity="info">
-                System settings panel - Implementation in progress
-              </Alert>
-            </CardContent>
-          </Card>
+        <TabPanel value="3">
+          <Typography variant="h6">User & Group Management</Typography>
+          <Typography variant="body2" color="textSecondary">
+            User and group management features coming soon...
+          </Typography>
         </TabPanel>
-      </Box>
-
-      {/* Edit User Dialog */}
-      <Dialog open={editUserDialog} onClose={() => setEditUserDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit User</DialogTitle>
-        <DialogContent>
-          {selectedUser && (
-            <Box sx={{ pt: 2 }}>
-              <TextField
-                fullWidth
-                label="Name"
-                value={selectedUser.name}
-                onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="Email"
-                value={selectedUser.email}
-                onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-                sx={{ mb: 2 }}
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={selectedUser.is_active}
-                    onChange={(e) => setSelectedUser({ ...selectedUser, is_active: e.target.checked })}
-                  />
-                }
-                label="Active"
-              />
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditUserDialog(false)}>Cancel</Button>
-          <Button onClick={saveUserChanges} variant="contained">
-            Save Changes
-          </Button>
-        </DialogActions>
-      </Dialog>
+      </TabContext>
     </Container>
   );
 }
+
+export default AdminPage;
