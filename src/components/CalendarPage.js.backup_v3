@@ -24,8 +24,6 @@ import {
   ListItemIcon,
   Paper,
   ButtonGroup,
-  ToggleButton,
-  ToggleButtonGroup,
 } from '@mui/material';
 import {
   Add,
@@ -44,16 +42,13 @@ import {
   Email,
   Link,
   Attachment,
-  ViewWeek,
-  ViewDay,
-  ViewModule,
 } from '@mui/icons-material';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../styles/calendar.css';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
-import { format, addHours, startOfDay, endOfDay, eachHourOfInterval } from 'date-fns';
+import { format } from 'date-fns';
 import { AuthContext } from '../contexts/AuthContext';
 
 export default function CalendarPage() {
@@ -64,7 +59,6 @@ export default function CalendarPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [eventDetailOpen, setEventDetailOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [viewMode, setViewMode] = useState('month');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -157,7 +151,9 @@ export default function CalendarPage() {
   };
 
   const handleJoinEvent = async (event) => {
+    // Check if the event has a Google Meet link or location
     if (event.google_event_id) {
+      // For Google Calendar events, try to extract meeting link
       const meetingLink = extractMeetingLink(event.description);
       if (meetingLink) {
         window.open(meetingLink, '_blank');
@@ -173,6 +169,7 @@ export default function CalendarPage() {
   const extractMeetingLink = (description) => {
     if (!description) return null;
     
+    // Common meeting link patterns
     const patterns = [
       /https:\/\/meet\.google\.com\/[a-z-]+/g,
       /https:\/\/zoom\.us\/j\/\d+/g,
@@ -212,22 +209,7 @@ export default function CalendarPage() {
     return null;
   };
 
-  // Generate hour slots for day view
-  const generateDayHours = () => {
-    const dayStart = startOfDay(selectedDate);
-    const dayEnd = endOfDay(selectedDate);
-    return eachHourOfInterval({ start: dayStart, end: dayEnd });
-  };
-
-  const getEventsForHour = (hour) => {
-    return eventsForSelectedDate.filter(event => {
-      const eventStart = new Date(event.start_time);
-      const eventHour = eventStart.getHours();
-      return eventHour === hour.getHours();
-    });
-  };
-
-  const EventCard = ({ event, compact = false }) => {
+  const EventCard = ({ event }) => {
     const isGoogleEvent = event.google_event_id && event.id < 0;
     const startTime = new Date(event.start_time);
     const endTime = new Date(event.end_time);
@@ -235,7 +217,7 @@ export default function CalendarPage() {
     return (
       <Card 
         sx={{ 
-          mb: compact ? 1 : 2, 
+          mb: 2, 
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           border: isGoogleEvent ? '1px solid #4285f4' : '1px solid #e0e0e0',
           borderLeft: isGoogleEvent ? '4px solid #4285f4' : '4px solid #1976d2',
@@ -248,38 +230,33 @@ export default function CalendarPage() {
         }}
         onClick={() => handleEventClick(event)}
       >
-        <CardContent sx={{ p: compact ? 1.5 : 2, '&:last-child': { pb: compact ? 1.5 : 2 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: compact ? 0.5 : 1 }}>
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
             <Box sx={{ flex: 1 }}>
-              <Typography 
-                variant={compact ? "subtitle2" : "h6"} 
-                sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5, lineHeight: 1.2 }}
-              >
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5 }}>
                 {event.title}
               </Typography>
               {isGoogleEvent && (
                 <Chip 
                   icon={<Google />} 
-                  label="Google" 
+                  label="Google Calendar" 
                   size="small" 
                   sx={{ 
                     backgroundColor: '#e8f0fe',
                     color: '#1976d2',
-                    fontWeight: 500,
-                    height: compact ? 18 : 24,
-                    fontSize: compact ? '0.6rem' : '0.75rem'
+                    fontWeight: 500
                   }} 
                 />
               )}
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: compact ? 0.5 : 1, color: '#666' }}>
-            <AccessTime sx={{ fontSize: compact ? 14 : 16, mr: 1 }} />
-            <Typography variant={compact ? "caption" : "body2"}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, color: '#666' }}>
+            <AccessTime sx={{ fontSize: 16, mr: 1 }} />
+            <Typography variant="body2">
               {format(startTime, 'h:mm a')} - {format(endTime, 'h:mm a')}
             </Typography>
           </Box>
-          {event.description && !compact && (
+          {event.description && (
             <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
               <Description sx={{ fontSize: 16, mr: 1, mt: 0.2, color: '#666' }} />
               <Typography variant="body2" sx={{ color: '#666', lineHeight: 1.4 }}>
@@ -289,89 +266,19 @@ export default function CalendarPage() {
               </Typography>
             </Box>
           )}
-          {!compact && <Divider sx={{ my: 1 }} />}
+          <Divider sx={{ my: 1 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="caption" sx={{ color: '#999' }}>
-              {compact ? 'Click for details' : 'Click to view details'}
+              Click to view details
             </Typography>
             {event.attachments && event.attachments.length > 0 && (
               <Chip 
                 label={`${event.attachments.length} file${event.attachments.length > 1 ? 's' : ''}`}
                 size="small"
                 variant="outlined"
-                sx={{ fontSize: compact ? '0.6rem' : '0.7rem' }}
+                sx={{ fontSize: '0.7rem' }}
               />
             )}
-          </Box>
-        </CardContent>
-      </Card>
-    );
-  };
-
-  const DayView = () => {
-    const hours = generateDayHours();
-    
-    return (
-      <Card>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <ViewDay sx={{ mr: 1, color: '#1976d2' }} />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Day View
-              </Typography>
-            </Box>
-            <Typography variant="subtitle2" color="textSecondary">
-              {format(selectedDate, 'EEEE, MMM dd')}
-            </Typography>
-          </Box>
-          
-          <Box sx={{ maxHeight: '600px', overflowY: 'auto' }}>
-            {hours.map((hour, index) => {
-              const hourEvents = getEventsForHour(hour);
-              return (
-                <Paper 
-                  key={index}
-                  variant="outlined" 
-                  sx={{ 
-                    mb: 1, 
-                    p: 2,
-                    minHeight: '60px',
-                    backgroundColor: hourEvents.length > 0 ? '#f8f9ff' : 'transparent',
-                    border: hourEvents.length > 0 ? '1px solid #e3f2fd' : '1px solid #e0e0e0'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        minWidth: '60px', 
-                        color: '#666', 
-                        fontWeight: 500,
-                        mt: 0.5
-                      }}
-                    >
-                      {format(hour, 'h:mm a')}
-                    </Typography>
-                    <Box sx={{ flex: 1, ml: 2 }}>
-                      {hourEvents.length === 0 ? (
-                        <Typography variant="caption" color="textSecondary">
-                          No events
-                        </Typography>
-                      ) : (
-                        hourEvents.map((event) => (
-                          <EventCard 
-                            key={`${event.id}-${event.google_event_id}`} 
-                            event={event} 
-                            compact={true}
-                          />
-                        ))
-                      )}
-                    </Box>
-                  </Box>
-                </Paper>
-              );
-            })}
           </Box>
         </CardContent>
       </Card>
@@ -384,23 +291,7 @@ export default function CalendarPage() {
         <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
           Calendar {loading && <CircularProgress size={24} sx={{ ml: 2 }} />}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(e, newMode) => newMode && setViewMode(newMode)}
-            size="small"
-          >
-            <ToggleButton value="month">
-              <ViewModule sx={{ mr: 1 }} />
-              Month
-            </ToggleButton>
-            <ToggleButton value="day">
-              <ViewDay sx={{ mr: 1 }} />
-              Day
-            </ToggleButton>
-          </ToggleButtonGroup>
-          
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
             variant="outlined"
             startIcon={<Refresh />}
@@ -421,16 +312,9 @@ export default function CalendarPage() {
       </Box>
 
       <Grid container spacing={3}>
-        {/* Month View */}
-        <Grid item xs={12} md={viewMode === 'month' ? 6 : 8}>
+        <Grid item xs={12} md={8}>
           <Card sx={{ mb: 2 }}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <ViewModule sx={{ mr: 1, color: '#1976d2' }} />
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Month View
-                </Typography>
-              </Box>
               <Calendar
                 onChange={setSelectedDate}
                 value={selectedDate}
@@ -443,50 +327,35 @@ export default function CalendarPage() {
           </Card>
         </Grid>
         
-        {/* Day View - Right Side */}
-        <Grid item xs={12} md={6}>
-          <DayView />
-        </Grid>
-        
-        {/* Event List for Selected Date */}
-        {viewMode === 'month' && (
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <CalendarToday sx={{ mr: 1, color: '#1976d2' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    Events for {format(selectedDate, 'EEEE, MMM dd, yyyy')}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <CalendarToday sx={{ mr: 1, color: '#1976d2' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  {format(selectedDate, 'EEEE, MMM dd, yyyy')}
+                </Typography>
+              </Box>
+              
+              {eventsForSelectedDate.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 3 }}>
+                  <EventIcon sx={{ fontSize: 48, color: '#bdbdbd', mb: 1 }} />
+                  <Typography color="textSecondary">
+                    No events scheduled for this day.
                   </Typography>
-                  <Chip 
-                    label={`${eventsForSelectedDate.length} event${eventsForSelectedDate.length !== 1 ? 's' : ''}`}
-                    size="small"
-                    sx={{ ml: 2 }}
-                  />
                 </Box>
-                
-                {eventsForSelectedDate.length === 0 ? (
-                  <Box sx={{ textAlign: 'center', py: 3 }}>
-                    <EventIcon sx={{ fontSize: 48, color: '#bdbdbd', mb: 1 }} />
-                    <Typography color="textSecondary">
-                      No events scheduled for this day.
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Grid container spacing={2}>
-                    {eventsForSelectedDate
-                      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
-                      .map((event) => (
-                        <Grid item xs={12} md={6} lg={4} key={`${event.id}-${event.google_event_id}`}>
-                          <EventCard event={event} />
-                        </Grid>
-                      ))}
-                  </Grid>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
+              ) : (
+                <Box sx={{ maxHeight: '600px', overflowY: 'auto' }}>
+                  {eventsForSelectedDate
+                    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+                    .map((event) => (
+                      <EventCard key={`${event.id}-${event.google_event_id}`} event={event} />
+                    ))}
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
 
       {/* Create Event Dialog */}
