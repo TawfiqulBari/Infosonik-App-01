@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, LargeBinary
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, LargeBinary, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel, EmailStr
@@ -130,7 +130,6 @@ class LeaveApplication(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class ConvenienceBill(Base):
-class ConvenienceBill(Base):
     __tablename__ = "convenience_bills"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, index=True)
@@ -153,7 +152,8 @@ class ConvenienceBill(Base):
     
     # Additional cost breakdown in BDT paisa
     fuel_cost = Column(Integer, default=0)
-    rental_cost = Column(Integer, default=0)    
+    rental_cost = Column(Integer, default=0)
+    
     # Client information fields
     client_id = Column(Integer, nullable=True)
     client_company_name = Column(String(255))
@@ -174,21 +174,8 @@ class ConvenienceBill(Base):
     
     @property
     def total_amount(self):
-        return ((self.transport_amount or 0) + (self.food_amount or 0) + 
+        return ((self.transport_amount or 0) + (self.food_amount or 0) +
                 (self.other_amount or 0) + (self.fuel_cost or 0) + (self.rental_cost or 0))
-    __tablename__ = "convenience_bills"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, index=True)
-    bill_date = Column(DateTime)  # Date of the bill
-    # Removed week_end_date, now using single bill_date
-    total_amount = Column(Integer)      # Amount in cents
-    description = Column(Text)
-    receipt_file_id = Column(Integer, nullable=True)  # Reference to FileAttachment
-    status = Column(String, default="pending")  # pending, approved, rejected
-    approved_by = Column(Integer, nullable=True)
-    approval_date = Column(DateTime, nullable=True)
-    approval_comments = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
 class UserGroup(Base):
     __tablename__ = "user_groups"
@@ -294,9 +281,6 @@ class Client(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = Column(Boolean, default=True)
-
-
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class SalesFunnel(Base):
     __tablename__ = "sales_funnel"
@@ -490,7 +474,6 @@ class LeaveApprovalRequest(BaseModel):
     comments: Optional[str] = None
 
 class ConvenienceBillCreate(BaseModel):
-class ConvenienceBillCreate(BaseModel):
     bill_date: datetime
     transport_amount: int = 0  # Amount in BDT paisa
     transport_description: Optional[str] = ""
@@ -502,13 +485,7 @@ class ConvenienceBillCreate(BaseModel):
     transport_from: Optional[str] = ""
     means_of_transportation: Optional[str] = ""
     fuel_cost: int = 0  # Amount in BDT paisa
-    rental_cost: int
-    client_id: Optional[int] = None
-    client_company_name: Optional[str] = ""
-    client_contact_number: Optional[str] = ""
-    expense_purpose: Optional[str] = ""
-    project_reference: Optional[str] = ""
-    is_billable: bool = 0  # Amount in BDT paisa
+    rental_cost: int = 0  # Amount in BDT paisa
     client_id: Optional[int] = None
     client_company_name: Optional[str] = ""
     client_contact_number: Optional[str] = ""
@@ -596,77 +573,6 @@ class GroupMemberAdd(BaseModel):
     role: str = "member"
 
 class GroupMemberResponse(BaseModel):
-    id: int
-    user_id: int
-    user_name: str
-    user_email: str
-    group_id: int
-    role: str
-    added_by: int
-    added_by_name: str
-    added_at: datetime
-    bill_date: datetime
-    # Removed week_end_date
-    total_amount: int  # Amount in cents
-    description: str
-    receipt_file_id: Optional[int] = None
-
-class ConvenienceBillResponse(BaseModel):
-    id: int
-    user_id: int
-    user_name: str
-    bill_date: datetime
-    # Removed week_end_date
-    total_amount: int
-    description: str
-    receipt_file_id: Optional[int] = None
-    receipt_filename: Optional[str] = None
-    status: str
-    approved_by: Optional[int] = None
-    approver_name: Optional[str] = None
-    approval_date: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
-
-class BillApprovalRequest(BaseModel):
-    status: str  # approved or rejected
-    comments: Optional[str] = None
-
-# Client Pydantic Models
-class ClientCreate(BaseModel):
-    company_name: str
-    contact_person: Optional[str] = ""
-    contact_number: Optional[str] = ""
-    email: Optional[str] = ""
-    address: Optional[str] = ""
-
-class ClientResponse(BaseModel):
-    id: int
-    company_name: str
-    contact_person: Optional[str] = ""
-    contact_number: Optional[str] = ""
-    email: Optional[str] = ""
-    address: Optional[str] = ""
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-
-
-class UserGroupCreate(BaseModel):
-    name: str
-    description: str
-
-class UserGroupResponse(BaseModel):
-    id: int
-    name: str
-    description: str
-    created_by: int
-    creator_name: str
-    member_count: int
-    created_at: datetime
-    updated_at: datetime
-
-class GroupMembershipResponse(BaseModel):
     id: int
     user_id: int
     user_name: str
@@ -2167,6 +2073,7 @@ async def submit_convenience_bill(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Submit convenience bill with client information"""
     convenience_bill = ConvenienceBill(
         user_id=current_user.id,
         bill_date=bill_request.bill_date,
@@ -2182,7 +2089,14 @@ async def submit_convenience_bill(
         fuel_cost=bill_request.fuel_cost,
         rental_cost=bill_request.rental_cost,
         general_description=bill_request.general_description,
-        receipt_file_id=bill_request.receipt_file_id
+        receipt_file_id=bill_request.receipt_file_id,
+        # Client information fields
+        client_id=bill_request.client_id,
+        client_company_name=bill_request.client_company_name,
+        client_contact_number=bill_request.client_contact_number,
+        expense_purpose=bill_request.expense_purpose,
+        project_reference=bill_request.project_reference,
+        is_billable=bill_request.is_billable
     )
     db.add(convenience_bill)
     db.commit()
@@ -2201,10 +2115,27 @@ async def submit_convenience_bill(
         user_id=convenience_bill.user_id,
         user_name=current_user.name,
         bill_date=convenience_bill.bill_date,
+        transport_amount=convenience_bill.transport_amount,
+        transport_description=convenience_bill.transport_description,
+        food_amount=convenience_bill.food_amount,
+        food_description=convenience_bill.food_description,
+        other_amount=convenience_bill.other_amount,
+        other_description=convenience_bill.other_description,
+        transport_to=convenience_bill.transport_to,
+        transport_from=convenience_bill.transport_from,
+        means_of_transportation=convenience_bill.means_of_transportation,
+        fuel_cost=convenience_bill.fuel_cost,
+        rental_cost=convenience_bill.rental_cost,
         total_amount=convenience_bill.total_amount,
-        description=convenience_bill.description,
+        general_description=convenience_bill.general_description,
         receipt_file_id=convenience_bill.receipt_file_id,
         receipt_filename=receipt_filename,
+        client_id=convenience_bill.client_id,
+        client_company_name=convenience_bill.client_company_name,
+        client_contact_number=convenience_bill.client_contact_number,
+        expense_purpose=convenience_bill.expense_purpose,
+        project_reference=convenience_bill.project_reference,
+        is_billable=convenience_bill.is_billable,
         status=convenience_bill.status,
         approved_by=convenience_bill.approved_by,
         approver_name=None,
@@ -2242,8 +2173,19 @@ async def get_my_convenience_bills(
             user_id=bill.user_id,
             user_name=current_user.name,
             bill_date=bill.bill_date,
+            transport_amount=bill.transport_amount,
+            transport_description=bill.transport_description,
+            food_amount=bill.food_amount,
+            food_description=bill.food_description,
+            other_amount=bill.other_amount,
+            other_description=bill.other_description,
+            transport_to=bill.transport_to,
+            transport_from=bill.transport_from,
+            means_of_transportation=bill.means_of_transportation,
+            fuel_cost=bill.fuel_cost,
+            rental_cost=bill.rental_cost,
             total_amount=bill.total_amount,
-            description=bill.description,
+            general_description=bill.general_description,
             receipt_file_id=bill.receipt_file_id,
             receipt_filename=receipt_filename,
             status=bill.status,
@@ -2282,8 +2224,19 @@ async def get_pending_convenience_bills(
             user_id=bill.user_id,
             user_name=user.name if user else "Unknown User",
             bill_date=bill.bill_date,
+            transport_amount=bill.transport_amount,
+            transport_description=bill.transport_description,
+            food_amount=bill.food_amount,
+            food_description=bill.food_description,
+            other_amount=bill.other_amount,
+            other_description=bill.other_description,
+            transport_to=bill.transport_to,
+            transport_from=bill.transport_from,
+            means_of_transportation=bill.means_of_transportation,
+            fuel_cost=bill.fuel_cost,
+            rental_cost=bill.rental_cost,
             total_amount=bill.total_amount,
-            description=bill.description,
+            general_description=bill.general_description,
             receipt_file_id=bill.receipt_file_id,
             receipt_filename=receipt_filename,
             status=bill.status,
@@ -3256,18 +3209,6 @@ async def update_convenience_bill(
     
     return {"message": "Bill updated successfully"}
 
-# Group Management Endpoints
-@app.get("/admin/groups")
-async def get_groups(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get all groups"""
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Admin access required")
-    
-    groups = db.query(UserGroup).all()
-    return [{"id": group.id, "name": group.name, "description": group.description} for group in groups]
 
 @app.get("/admin/reports")
 async def get_admin_reports(
@@ -3367,74 +3308,3 @@ async def delete_client(
     
     return {"message": "Client deleted successfully"}
 
-# Enhanced Bill Submission with Client Information
-@app.post("/bills/submit", response_model=ConvenienceBillResponse)
-async def submit_convenience_bill_with_client(
-    bill_request: ConvenienceBillCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Submit convenience bill with client information"""
-    convenience_bill = ConvenienceBill(
-        user_id=current_user.id,
-        bill_date=bill_request.bill_date,
-        transport_amount=bill_request.transport_amount,
-        transport_description=bill_request.transport_description,
-        food_amount=bill_request.food_amount,
-        food_description=bill_request.food_description,
-        other_amount=bill_request.other_amount,
-        other_description=bill_request.other_description,
-        transport_to=bill_request.transport_to,
-        transport_from=bill_request.transport_from,
-        means_of_transportation=bill_request.means_of_transportation,
-        fuel_cost=bill_request.fuel_cost,
-        rental_cost=bill_request.rental_cost,
-        general_description=bill_request.general_description,
-        receipt_file_id=bill_request.receipt_file_id,
-        # New client fields
-        client_id=bill_request.client_id,
-        client_company_name=bill_request.client_company_name,
-        client_contact_number=bill_request.client_contact_number,
-        expense_purpose=bill_request.expense_purpose,
-        project_reference=bill_request.project_reference,
-        is_billable=bill_request.is_billable
-    )
-    db.add(convenience_bill)
-    db.commit()
-    db.refresh(convenience_bill)
-    
-    # Get user information for response
-    user = db.query(User).filter(User.id == current_user.id).first()
-    
-    return ConvenienceBillResponse(
-        id=convenience_bill.id,
-        user_id=convenience_bill.user_id,
-        user_name=user.name,
-        bill_date=convenience_bill.bill_date,
-        transport_amount=convenience_bill.transport_amount,
-        transport_description=convenience_bill.transport_description,
-        food_amount=convenience_bill.food_amount,
-        food_description=convenience_bill.food_description,
-        other_amount=convenience_bill.other_amount,
-        other_description=convenience_bill.other_description,
-        transport_to=convenience_bill.transport_to,
-        transport_from=convenience_bill.transport_from,
-        means_of_transportation=convenience_bill.means_of_transportation,
-        fuel_cost=convenience_bill.fuel_cost,
-        rental_cost=convenience_bill.rental_cost,
-        total_amount=convenience_bill.total_amount,
-        general_description=convenience_bill.general_description,
-        receipt_file_id=convenience_bill.receipt_file_id,
-        client_id=convenience_bill.client_id,
-        client_company_name=convenience_bill.client_company_name,
-        client_contact_number=convenience_bill.client_contact_number,
-        expense_purpose=convenience_bill.expense_purpose,
-        project_reference=convenience_bill.project_reference,
-        is_billable=convenience_bill.is_billable,
-        status=convenience_bill.status,
-        approved_by=convenience_bill.approved_by,
-        approval_date=convenience_bill.approval_date,
-        approval_comments=convenience_bill.approval_comments,
-        created_at=convenience_bill.created_at,
-        updated_at=convenience_bill.updated_at
-    )

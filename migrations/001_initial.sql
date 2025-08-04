@@ -215,61 +215,7 @@ INSERT INTO user_groups (name, description, created_by) VALUES
 ('HR Department', 'Human resources department', 1),
 ('Accounts Department', 'Finance and accounting department', 1);
 
--- Enhanced expense breakdown
-ALTER TABLE convenience_bills
-    ADD COLUMN transport_to VARCHAR(255),
-    ADD COLUMN transport_from VARCHAR(255),
-    ADD COLUMN means_of_transportation VARCHAR(255),
-    ADD COLUMN fuel_cost INTEGER DEFAULT 0,
-    ADD COLUMN rental_cost INTEGER DEFAULT 0;
-
-
-
-
--- Create clients table for client data management
-CREATE TABLE clients (
-    id SERIAL PRIMARY KEY,
-    company_name VARCHAR(255) NOT NULL,
-    contact_person VARCHAR(255),
-    contact_number VARCHAR(50),
-    email VARCHAR(255),
-    address TEXT,
-    created_by INTEGER REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE
-);
-
--- Enhanced convenience_bills table with client information
-CREATE TABLE updated_convenience_bills (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    bill_date TIMESTAMP NOT NULL,
-    transport_amount INTEGER DEFAULT 0,
-    transport_description TEXT,
-    transport_to VARCHAR(255),
-    transport_from VARCHAR(255),
-    means_of_transportation VARCHAR(255),
-    food_amount INTEGER DEFAULT 0,
-    food_description TEXT,
-    other_amount INTEGER DEFAULT 0,
-    other_description TEXT,
-    fuel_cost INTEGER DEFAULT 0,
-    rental_cost INTEGER DEFAULT 0,
-    total_amount INTEGER GENERATED ALWAYS AS (transport_amount + food_amount + other_amount + fuel_cost + rental_cost) STORED,
-    general_description TEXT,
-    receipt_file_id INTEGER REFERENCES file_attachments(id),
-    client_id INTEGER REFERENCES clients(id),
-    client_company_name VARCHAR(255),
-    client_contact_number VARCHAR(50),
-    expense_purpose TEXT,
-    project_reference VARCHAR(255),
-    is_billable BOOLEAN DEFAULT FALSE,
-    status VARCHAR(255) DEFAULT 'pending',
-    approved_by INTEGER REFERENCES users(id),
-    approval_date TIMESTAMP,
-    approval_comments TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Add indexes for clients table
+CREATE INDEX IF NOT EXISTS idx_clients_company_name ON clients(company_name);
+CREATE INDEX IF NOT EXISTS idx_clients_is_active ON clients(is_active);
 
