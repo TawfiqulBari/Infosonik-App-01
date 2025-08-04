@@ -92,3 +92,8 @@ dmypy.json
 config.local.js
 config.local.json
 .env.prod
+
+# Additional environment files
+.env.prod
+.env.prod.backup
+.env.production.local
