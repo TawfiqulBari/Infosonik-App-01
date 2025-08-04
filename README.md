@@ -756,3 +756,44 @@ For support and questions:
 - **Secure Deployment**: Production environment variables properly configured
 - **OAuth Security**: Proper token handling and refresh mechanisms
 
+
+## 🎉 Latest Enhancements - August 4, 2025
+
+### 🏢 **Enhanced Client & Expense Management**
+- **Client/Company Information Tracking**: Track client, contact number, expense purpose
+- **Billable Expenses**: Flag expenses that can be billed to clients  
+- **Project Reference**: Assign expenses to specific projects
+- **Admin Approval Workflows**: Multi-level approval for expenses
+- **User Role Management**: Fine-grained permission controls
+
+### 📊 **Advanced Reporting System**
+- **Comprehensive Reports**: Generate user and group-based reports
+- **Export Formats**: PDF, Excel, CSV, and share via email/drive
+- **Scheduled Reports**: Automate report generation
+
+### 🗄️ **Database Enhancements**
+- **Enhanced Schema**: Added client tracking and RBAC tables
+- **Migration Scripts**: Automated database updates
+- **Performance Optimizations**: Improved indexing and queries
+
+### 🔐 **Role-Based Access Control (RBAC)**
+- **Granular Permissions**: Module-based access control
+- **Admin Dashboard**: Complete expense approval workflow
+- **User Groups**: Team-based permission management
+- **Audit Trail**: Track all administrative actions
+
+### 🌐 **Deployment & Infrastructure**
+- **Environment Security**: .env files properly excluded from git
+- **Production Ready**: Enhanced Docker configuration
+- **Database Migrations**: Automated schema updates
+- **CI/CD Ready**: Streamlined deployment process
+
+🐛 **Bug Fixes**:
+- Fixed OAuth token refresh issues
+- Resolved UI build errors
+- Fixed currency display consistency
+
+🔧 **Technical Improvements**:
+- Enhanced PostgreSQL schema with proper relationships
+- Improved API endpoints with comprehensive validation
+- Updated frontend components with Material-UI enhancements

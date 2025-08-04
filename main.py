@@ -130,6 +130,52 @@ class LeaveApplication(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class ConvenienceBill(Base):
+class ConvenienceBill(Base):
+    __tablename__ = "convenience_bills"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)
+    bill_date = Column(DateTime, nullable=False)
+    
+    # Detailed expense breakdown in BDT paisa (1 BDT = 100 paisa)
+    transport_amount = Column(Integer, default=0)  # Transportation costs
+    transport_description = Column(Text)
+    
+    food_amount = Column(Integer, default=0)  # Food costs
+    food_description = Column(Text)
+    
+    other_amount = Column(Integer, default=0)  # Other costs
+    other_description = Column(Text)
+    
+    # Enhanced transportation details
+    transport_to = Column(String(255))
+    transport_from = Column(String(255))
+    means_of_transportation = Column(String(255))
+    
+    # Additional cost breakdown in BDT paisa
+    fuel_cost = Column(Integer, default=0)
+    rental_cost = Column(Integer, default=0)    
+    # Client information fields
+    client_id = Column(Integer, nullable=True)
+    client_company_name = Column(String(255))
+    client_contact_number = Column(String(50))
+    expense_purpose = Column(Text)
+    project_reference = Column(String(255))
+    is_billable = Column(Boolean, default=False)
+    
+    # General description and metadata
+    general_description = Column(Text)
+    receipt_file_id = Column(Integer, nullable=True)
+    status = Column(String, default="pending")
+    approved_by = Column(Integer, nullable=True)
+    approval_date = Column(DateTime, nullable=True)
+    approval_comments = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    @property
+    def total_amount(self):
+        return ((self.transport_amount or 0) + (self.food_amount or 0) + 
+                (self.other_amount or 0) + (self.fuel_cost or 0) + (self.rental_cost or 0))
     __tablename__ = "convenience_bills"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, index=True)
@@ -143,7 +189,6 @@ class ConvenienceBill(Base):
     approval_date = Column(DateTime, nullable=True)
     approval_comments = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class UserGroup(Base):
     __tablename__ = "user_groups"
@@ -179,6 +224,78 @@ class MEDDPICC(Base):
     champion = Column(Text)
     competition = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+# RBAC Models
+class UserPermission(Base):
+    __tablename__ = "user_permissions"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)
+    module = Column(String)
+    permission = Column(String)
+    granted_by = Column(Integer, index=True)
+    granted_at = Column(DateTime, default=datetime.utcnow)
+
+class GroupPermission(Base):
+    __tablename__ = "group_permissions"
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, index=True)
+    module = Column(String)
+    permission = Column(String)
+    granted_by = Column(Integer, index=True)
+    granted_at = Column(DateTime, default=datetime.utcnow)
+
+class ExpenseModification(Base):
+    __tablename__ = "expense_modifications"
+    id = Column(Integer, primary_key=True, index=True)
+    expense_id = Column(Integer, index=True)
+    modified_by = Column(Integer, index=True)
+    modification_type = Column(String)
+    old_values = Column(Text)  # JSON string
+    new_values = Column(Text)  # JSON string
+    modification_reason = Column(Text)
+    modified_at = Column(DateTime, default=datetime.utcnow)
+
+class GeneratedReport(Base):
+    __tablename__ = "generated_reports"
+    id = Column(Integer, primary_key=True, index=True)
+    report_type = Column(String)
+    report_period = Column(String)
+    start_date = Column(Date)
+    end_date = Column(Date)
+    user_id = Column(Integer, nullable=True, index=True)
+    group_id = Column(Integer, nullable=True, index=True)
+    generated_by = Column(Integer, index=True)
+    file_path = Column(String)
+    file_format = Column(String)
+    share_link = Column(String, nullable=True)
+    drive_file_id = Column(String, nullable=True)
+    generated_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)
+
+class ReceiptAttachment(Base):
+    __tablename__ = "receipt_attachments"
+    id = Column(Integer, primary_key=True, index=True)
+    expense_id = Column(Integer, index=True)
+    file_attachment_id = Column(Integer, index=True)
+    receipt_type = Column(String)
+    uploaded_by = Column(Integer, index=True)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+# Client Management Model
+class Client(Base):
+    __tablename__ = "clients"
+    id = Column(Integer, primary_key=True, index=True)
+    company_name = Column(String, nullable=False, index=True)
+    contact_person = Column(String)
+    contact_number = Column(String)
+    email = Column(String)
+    address = Column(Text)
+    created_by = Column(Integer, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+
+
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class SalesFunnel(Base):
@@ -373,6 +490,121 @@ class LeaveApprovalRequest(BaseModel):
     comments: Optional[str] = None
 
 class ConvenienceBillCreate(BaseModel):
+class ConvenienceBillCreate(BaseModel):
+    bill_date: datetime
+    transport_amount: int = 0  # Amount in BDT paisa
+    transport_description: Optional[str] = ""
+    food_amount: int = 0  # Amount in BDT paisa
+    food_description: Optional[str] = ""
+    other_amount: int = 0  # Amount in BDT paisa
+    other_description: Optional[str] = ""
+    transport_to: Optional[str] = ""
+    transport_from: Optional[str] = ""
+    means_of_transportation: Optional[str] = ""
+    fuel_cost: int = 0  # Amount in BDT paisa
+    rental_cost: int
+    client_id: Optional[int] = None
+    client_company_name: Optional[str] = ""
+    client_contact_number: Optional[str] = ""
+    expense_purpose: Optional[str] = ""
+    project_reference: Optional[str] = ""
+    is_billable: bool = 0  # Amount in BDT paisa
+    client_id: Optional[int] = None
+    client_company_name: Optional[str] = ""
+    client_contact_number: Optional[str] = ""
+    expense_purpose: Optional[str] = ""
+    project_reference: Optional[str] = ""
+    is_billable: bool = False
+    general_description: str
+    receipt_file_id: Optional[int] = None
+
+class ConvenienceBillResponse(BaseModel):
+    id: int
+    user_id: int
+    user_name: str
+    bill_date: datetime
+    transport_amount: int
+    transport_description: Optional[str] = ""
+    food_amount: int
+    food_description: Optional[str] = ""
+    other_amount: int
+    other_description: Optional[str] = ""
+    transport_to: Optional[str] = ""
+    transport_from: Optional[str] = ""
+    means_of_transportation: Optional[str] = ""
+    fuel_cost: int
+    rental_cost: int
+    client_id: Optional[int] = None
+    client_company_name: Optional[str] = ""
+    client_contact_number: Optional[str] = ""
+    expense_purpose: Optional[str] = ""
+    project_reference: Optional[str] = ""
+    is_billable: bool
+    total_amount: int
+    general_description: Optional[str] = ""
+    receipt_file_id: Optional[int] = None
+    receipt_filename: Optional[str] = None
+    status: str
+    approved_by: Optional[int] = None
+    approver_name: Optional[str] = None
+    approval_date: Optional[datetime] = None
+    approval_comments: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+class BillApprovalRequest(BaseModel):
+    status: str  # approved or rejected
+    comments: Optional[str] = None
+
+# Client Pydantic Models
+class ClientCreate(BaseModel):
+    company_name: str
+    contact_person: Optional[str] = ""
+    contact_number: Optional[str] = ""
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+
+class ClientResponse(BaseModel):
+    id: int
+    company_name: str
+    contact_person: Optional[str] = ""
+    contact_number: Optional[str] = ""
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+# Group Management Models
+class GroupCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+
+class GroupResponse(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = ""
+    created_by: int
+    creator_name: str
+    member_count: int
+    created_at: datetime
+    updated_at: datetime
+
+class GroupMemberAdd(BaseModel):
+    user_ids: List[int]
+    role: str = "member"
+
+class GroupMemberResponse(BaseModel):
+    id: int
+    user_id: int
+    user_name: str
+    user_email: str
+    group_id: int
+    role: str
+    added_by: int
+    added_by_name: str
+    added_at: datetime
     bill_date: datetime
     # Removed week_end_date
     total_amount: int  # Amount in cents
@@ -393,13 +625,32 @@ class ConvenienceBillResponse(BaseModel):
     approved_by: Optional[int] = None
     approver_name: Optional[str] = None
     approval_date: Optional[datetime] = None
-    approval_comments: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
 class BillApprovalRequest(BaseModel):
     status: str  # approved or rejected
     comments: Optional[str] = None
+
+# Client Pydantic Models
+class ClientCreate(BaseModel):
+    company_name: str
+    contact_person: Optional[str] = ""
+    contact_number: Optional[str] = ""
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+
+class ClientResponse(BaseModel):
+    id: int
+    company_name: str
+    contact_person: Optional[str] = ""
+    contact_number: Optional[str] = ""
+    email: Optional[str] = ""
+    address: Optional[str] = ""
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
 
 class UserGroupCreate(BaseModel):
     name: str
@@ -1195,7 +1446,12 @@ async def get_events(
             # Continue with just local events if Google Calendar fails
     
     # Sort events by start time
-    result.sort(key=lambda x: x.start_time)
+    # Sort events by start time with timezone handling
+    try:
+        result.sort(key=lambda x: x.start_time.replace(tzinfo=None) if x.start_time.tzinfo else x.start_time)
+    except (AttributeError, TypeError):
+        # Fallback sorting if datetime comparison fails
+        result.sort(key=lambda x: str(x.start_time))
     
     return result
 
@@ -1914,9 +2170,18 @@ async def submit_convenience_bill(
     convenience_bill = ConvenienceBill(
         user_id=current_user.id,
         bill_date=bill_request.bill_date,
-        # week_end_date removed
-        total_amount=bill_request.total_amount,
-        description=bill_request.description,
+        transport_amount=bill_request.transport_amount,
+        transport_description=bill_request.transport_description,
+        food_amount=bill_request.food_amount,
+        food_description=bill_request.food_description,
+        other_amount=bill_request.other_amount,
+        other_description=bill_request.other_description,
+        transport_to=bill_request.transport_to,
+        transport_from=bill_request.transport_from,
+        means_of_transportation=bill_request.means_of_transportation,
+        fuel_cost=bill_request.fuel_cost,
+        rental_cost=bill_request.rental_cost,
+        general_description=bill_request.general_description,
         receipt_file_id=bill_request.receipt_file_id
     )
     db.add(convenience_bill)
@@ -2466,3 +2731,710 @@ async def invite_to_event(
         return {"message": "Invitation sent successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to invite: {e}")
+
+# Group Management Endpoints
+
+@app.post("/admin/groups", response_model=GroupResponse)
+async def create_group(
+    group: GroupCreate,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Create a new user group"""
+    # Check if group already exists
+    existing_group = db.query(UserGroup).filter(UserGroup.name == group.name).first()
+    if existing_group:
+        raise HTTPException(status_code=400, detail="Group already exists")
+    
+    db_group = UserGroup(
+        name=group.name,
+        description=group.description,
+        created_by=admin_user.id
+    )
+    db.add(db_group)
+    db.commit()
+    db.refresh(db_group)
+    
+    return GroupResponse(
+        id=db_group.id,
+        name=db_group.name,
+        description=db_group.description or "",
+        created_by=db_group.created_by,
+        creator_name=admin_user.name,
+        member_count=0,
+        created_at=db_group.created_at,
+        updated_at=db_group.updated_at
+    )
+
+@app.get("/admin/groups", response_model=List[GroupResponse])
+async def get_all_groups(
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Get all user groups"""
+    groups = db.query(UserGroup).all()
+    result = []
+    
+    for group in groups:
+        creator = db.query(User).filter(User.id == group.created_by).first()
+        member_count = db.query(GroupMembership).filter(GroupMembership.group_id == group.id).count()
+        
+        result.append(GroupResponse(
+            id=group.id,
+            name=group.name,
+            description=group.description or "",
+            created_by=group.created_by,
+            creator_name=creator.name if creator else "Unknown",
+            member_count=member_count,
+            created_at=group.created_at,
+            updated_at=group.updated_at
+        ))
+    
+    return result
+
+@app.put("/admin/groups/{group_id}", response_model=GroupResponse)
+async def update_group(
+    group_id: int,
+    group_update: GroupCreate,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Update a user group"""
+    db_group = db.query(UserGroup).filter(UserGroup.id == group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Check if the new name already exists (if changed)
+    if group_update.name != db_group.name:
+        existing_group = db.query(UserGroup).filter(UserGroup.name == group_update.name).first()
+        if existing_group:
+            raise HTTPException(status_code=400, detail="Group name already exists")
+    
+    db_group.name = group_update.name
+    db_group.description = group_update.description
+    db_group.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(db_group)
+    
+    creator = db.query(User).filter(User.id == db_group.created_by).first()
+    member_count = db.query(GroupMembership).filter(GroupMembership.group_id == group_id).count()
+    
+    return GroupResponse(
+        id=db_group.id,
+        name=db_group.name,
+        description=db_group.description or "",
+        created_by=db_group.created_by,
+        creator_name=creator.name if creator else "Unknown",
+        member_count=member_count,
+        created_at=db_group.created_at,
+        updated_at=db_group.updated_at
+    )
+
+@app.delete("/admin/groups/{group_id}")
+async def delete_group(
+    group_id: int,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Delete a user group"""
+    db_group = db.query(UserGroup).filter(UserGroup.id == group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Remove all group memberships first
+    db.query(GroupMembership).filter(GroupMembership.group_id == group_id).delete()
+    
+    # Delete the group
+    db.delete(db_group)
+    db.commit()
+    
+    return {"message": "Group deleted successfully"}
+
+@app.post("/admin/groups/{group_id}/members")
+async def add_group_members(
+    group_id: int,
+    member_add: GroupMemberAdd,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Add users to a group"""
+    db_group = db.query(UserGroup).filter(UserGroup.id == group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    added_users = []
+    for user_id in member_add.user_ids:
+        # Check if user exists
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            continue
+        
+        # Check if user is already in the group
+        existing_membership = db.query(GroupMembership).filter(
+            GroupMembership.user_id == user_id,
+            GroupMembership.group_id == group_id
+        ).first()
+        
+        if not existing_membership:
+            membership = GroupMembership(
+                user_id=user_id,
+                group_id=group_id,
+                role=member_add.role,
+                added_by=admin_user.id
+            )
+            db.add(membership)
+            added_users.append(user.name)
+    
+    db.commit()
+    
+    return {
+        "message": f"Added {len(added_users)} users to group",
+        "added_users": added_users
+    }
+
+@app.get("/admin/groups/{group_id}/members", response_model=List[GroupMemberResponse])
+async def get_group_members(
+    group_id: int,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Get all members of a group"""
+    db_group = db.query(UserGroup).filter(UserGroup.id == group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    memberships = db.query(GroupMembership).filter(GroupMembership.group_id == group_id).all()
+    result = []
+    
+    for membership in memberships:
+        user = db.query(User).filter(User.id == membership.user_id).first()
+        added_by_user = db.query(User).filter(User.id == membership.added_by).first()
+        
+        if user:
+            result.append(GroupMemberResponse(
+                id=membership.id,
+                user_id=membership.user_id,
+                user_name=user.name,
+                user_email=user.email,
+                group_id=membership.group_id,
+                role=membership.role,
+                added_by=membership.added_by,
+                added_by_name=added_by_user.name if added_by_user else "Unknown",
+                added_at=membership.added_at
+            ))
+    
+    return result
+
+@app.delete("/admin/groups/{group_id}/members/{user_id}")
+async def remove_group_member(
+    group_id: int,
+    user_id: int,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Remove a user from a group"""
+    membership = db.query(GroupMembership).filter(
+        GroupMembership.group_id == group_id,
+        GroupMembership.user_id == user_id
+    ).first()
+    
+    if not membership:
+        raise HTTPException(status_code=404, detail="Group membership not found")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    db.delete(membership)
+    db.commit()
+    
+    return {
+        "message": f"Removed {user.name if user else 'user'} from group successfully"
+    }
+
+
+# Additional Imports
+import json
+
+# Role-Based Access Control (RBAC) Functionality
+class RBACManager:
+    def __init__(self, db_session):
+        self.db = db_session
+
+    def user_has_permission(self, user_id, module, permission):
+        # Check individual permissions
+        user_permissions = self.db.query(UserPermission).filter_by(user_id=user_id, module=module).all()
+        if any(p.permission == permission for p in user_permissions):
+            return True
+        # Check group permissions
+        user_groups = self.db.query(GroupMembership.group_id).filter_by(user_id=user_id).all()
+        group_permissions = self.db.query(GroupPermission).filter(GroupPermission.group_id.in_(user_groups)).filter_by(module=module, permission=permission).all()
+        return group_permissions.exists()
+
+# Expense Report Generator
+class ExpenseReportGenerator:
+    def __init__(self, db_session):
+        self.db = db_session
+
+    def generate_report(self, report_type, start_date, end_date, user_id=None, group_id=None, file_format='pdf'):
+        # Logic to generate reports based on user or group within specified date range
+        # Use libraries like Pandas, XlsxWriter, and PDF generation tools
+        report_data = self._fetch_expense_data(report_type, start_date, end_date, user_id, group_id)
+        if file_format == 'pdf':
+            return self._generate_pdf(report_data)
+        elif file_format == 'excel':
+            return self._generate_excel(report_data)
+        elif file_format == 'csv':
+            return self._generate_csv(report_data)
+
+    def _fetch_expense_data(self, report_type, start_date, end_date, user_id, group_id):
+        
+        # Logic to fetch and compile expense data
+        
+        return {}
+
+    def _generate_pdf(self, data):
+        
+        # Logic for PDF generation
+        
+        return 'path_to_pdf_file'
+
+    def _generate_excel(self, data):
+        
+        # Logic for Excel generation
+        
+        return 'path_to_excel_file'
+
+    def _generate_csv(self, data):
+
+        # Logic for CSV generation
+
+        return 'path_to_csv_file'
+
+# Expense Modification Logging
+class ExpenseModificationLogger:
+    def __init__(self, db_session):
+        self.db = db_session
+
+    def log_modification(self, expense_id, modified_by, modification_type, old_values, new_values, modification_reason):
+        modification_log = ExpenseModification(
+            expense_id=expense_id,
+            modified_by=modified_by,
+            modification_type=modification_type,
+            old_values=json.dumps(old_values),
+            new_values=json.dumps(new_values),
+            modification_reason=modification_reason
+        )
+        self.db.add(modification_log)
+        self.db.commit()
+
+# Enhanced API Endpoints for RBAC and Reporting
+
+# Admin Expense Management Endpoints
+@app.get("/admin/expenses")
+async def get_admin_expenses(
+    group: Optional[int] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all expenses for admin review, optionally filtered by group"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = db.query(ConvenienceBill).join(User, ConvenienceBill.user_id == User.id)
+    
+    if group:
+        query = query.join(GroupMembership, User.id == GroupMembership.user_id).filter(GroupMembership.group_id == group)
+    
+    expenses = query.all()
+    
+    result = []
+    for expense in expenses:
+        user = db.query(User).filter(User.id == expense.user_id).first()
+        group_membership = db.query(GroupMembership).filter(GroupMembership.user_id == expense.user_id).first()
+        group_name = None
+        if group_membership:
+            group_obj = db.query(UserGroup).filter(UserGroup.id == group_membership.group_id).first()
+            group_name = group_obj.name if group_obj else None
+        
+        result.append({
+            "id": expense.id,
+            "user_name": user.name,
+            "group_name": group_name,
+            "bill_date": expense.bill_date,
+            "total_amount": expense.total_amount,
+            "general_description": expense.general_description,
+            "status": expense.status
+        })
+    
+    return result
+
+@app.post("/admin/expenses/{expense_id}/approve")
+async def approve_expense(
+    expense_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Approve an expense"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    expense = db.query(ConvenienceBill).filter(ConvenienceBill.id == expense_id).first()
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    
+    expense.status = "approved"
+    expense.approved_by = current_user.id
+    expense.approval_date = datetime.utcnow()
+    
+    db.commit()
+    return {"message": "Expense approved successfully"}
+
+@app.post("/admin/expenses/{expense_id}/reject")
+async def reject_expense(
+    expense_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Reject an expense"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    expense = db.query(ConvenienceBill).filter(ConvenienceBill.id == expense_id).first()
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    
+    expense.status = "rejected"
+    expense.approved_by = current_user.id
+    expense.approval_date = datetime.utcnow()
+    
+    db.commit()
+    return {"message": "Expense rejected successfully"}
+
+# Report Generation Endpoints
+@app.post("/admin/reports/generate")
+async def generate_admin_report(
+    report_request: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Generate expense report for admin"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Generate report logic here
+    report = GeneratedReport(
+        report_type="admin_summary",
+        report_period=report_request.get("period", "monthly"),
+        start_date=datetime.strptime(report_request["start_date"], "%Y-%m-%d").date(),
+        end_date=datetime.strptime(report_request["end_date"], "%Y-%m-%d").date(),
+        generated_by=current_user.id,
+        file_format=report_request.get("format", "pdf"),
+        file_path=f"/reports/admin_report_{datetime.now().timestamp()}.pdf"
+    )
+    
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+    
+    return {"id": report.id, "message": "Report generated successfully"}
+
+# User Monthly Report Endpoints
+@app.get("/bills/monthly-report")
+async def get_user_monthly_report(
+    start_date: str,
+    end_date: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user's monthly expense report"""
+    expenses = db.query(ConvenienceBill).filter(
+        ConvenienceBill.user_id == current_user.id,
+        ConvenienceBill.bill_date >= datetime.strptime(start_date, "%Y-%m-%d"),
+        ConvenienceBill.bill_date <= datetime.strptime(end_date, "%Y-%m-%d")
+    ).all()
+    
+    total_amount = sum(expense.total_amount for expense in expenses)
+    transport_total = sum(expense.transport_amount or 0 for expense in expenses)
+    food_total = sum(expense.food_amount or 0 for expense in expenses)
+    fuel_total = sum(expense.fuel_cost or 0 for expense in expenses)
+    rental_total = sum(expense.rental_cost or 0 for expense in expenses)
+    other_total = sum(expense.other_amount or 0 for expense in expenses)
+    
+    return {
+        "expenses": [
+            {
+                "id": expense.id,
+                "bill_date": expense.bill_date,
+                "transport_amount": expense.transport_amount or 0,
+                "food_amount": expense.food_amount or 0,
+                "fuel_cost": expense.fuel_cost or 0,
+                "rental_cost": expense.rental_cost or 0,
+                "other_amount": expense.other_amount or 0,
+                "total_amount": expense.total_amount,
+                "general_description": expense.general_description,
+                "status": expense.status
+            }
+            for expense in expenses
+        ],
+        "summary": {
+            "total_amount": total_amount,
+            "transport_total": transport_total,
+            "food_total": food_total,
+            "fuel_total": fuel_total,
+            "rental_total": rental_total,
+            "other_total": other_total
+        }
+    }
+
+# Enhanced Bill Update Endpoint
+@app.post("/bills/{bill_id}/update")
+async def update_convenience_bill(
+    bill_id: int,
+    bill_request: ConvenienceBillCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update an existing convenience bill"""
+    bill = db.query(ConvenienceBill).filter(
+        ConvenienceBill.id == bill_id,
+        ConvenienceBill.user_id == current_user.id
+    ).first()
+    
+    if not bill:
+        raise HTTPException(status_code=404, detail="Bill not found")
+    
+    if bill.status == "approved":
+        raise HTTPException(status_code=400, detail="Cannot modify approved bills")
+    
+    # Store old values for audit trail
+    old_values = {
+        "transport_amount": bill.transport_amount,
+        "food_amount": bill.food_amount,
+        "other_amount": bill.other_amount,
+        "fuel_cost": bill.fuel_cost,
+        "rental_cost": bill.rental_cost,
+        "general_description": bill.general_description
+    }
+    
+    # Update bill fields
+    bill.bill_date = bill_request.bill_date
+    bill.transport_amount = bill_request.transport_amount
+    bill.transport_description = bill_request.transport_description
+    bill.food_amount = bill_request.food_amount
+    bill.food_description = bill_request.food_description
+    bill.other_amount = bill_request.other_amount
+    bill.other_description = bill_request.other_description
+    bill.fuel_cost = bill_request.fuel_cost
+    bill.rental_cost = bill_request.rental_cost
+    bill.transport_to = bill_request.transport_to
+    bill.transport_from = bill_request.transport_from
+    bill.means_of_transportation = bill_request.means_of_transportation
+    bill.general_description = bill_request.general_description
+    bill.last_modified_by = current_user.id
+    bill.last_modified_at = datetime.utcnow()
+    bill.status = "pending"  # Reset to pending after modification
+    
+    db.commit()
+    
+    # Log modification
+    modification = ExpenseModification(
+        expense_id=bill.id,
+        modified_by=current_user.id,
+        modification_type="updated",
+        old_values=json.dumps(old_values),
+        new_values=json.dumps({
+            "transport_amount": bill.transport_amount,
+            "food_amount": bill.food_amount,
+            "other_amount": bill.other_amount,
+            "fuel_cost": bill.fuel_cost,
+            "rental_cost": bill.rental_cost,
+            "general_description": bill.general_description
+        }),
+        modification_reason="User update"
+    )
+    db.add(modification)
+    db.commit()
+    
+    return {"message": "Bill updated successfully"}
+
+# Group Management Endpoints
+@app.get("/admin/groups")
+async def get_groups(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all groups"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    groups = db.query(UserGroup).all()
+    return [{"id": group.id, "name": group.name, "description": group.description} for group in groups]
+
+@app.get("/admin/reports")
+async def get_admin_reports(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all generated reports"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    reports = db.query(GeneratedReport).order_by(GeneratedReport.generated_at.desc()).all()
+    return [
+        {
+            "id": report.id,
+            "report_type": report.report_type,
+            "report_period": report.report_period,
+            "start_date": report.start_date,
+            "end_date": report.end_date,
+            "generated_at": report.generated_at,
+            "file_format": report.file_format
+        }
+        for report in reports
+    ]
+
+# Client Management API Endpoints
+
+@app.get("/clients", response_model=List[ClientResponse])
+async def get_clients(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all active clients"""
+    clients = db.query(Client).filter(Client.is_active == True).all()
+    return clients
+
+@app.post("/clients", response_model=ClientResponse)
+async def create_client(
+    client_data: ClientCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new client"""
+    client = Client(
+        company_name=client_data.company_name,
+        contact_person=client_data.contact_person,
+        contact_number=client_data.contact_number,
+        email=client_data.email,
+        address=client_data.address,
+        created_by=current_user.id
+    )
+    
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    
+    return client
+
+@app.put("/clients/{client_id}", response_model=ClientResponse)
+async def update_client(
+    client_id: int,
+    client_data: ClientCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update an existing client"""
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    client.company_name = client_data.company_name
+    client.contact_person = client_data.contact_person
+    client.contact_number = client_data.contact_number
+    client.email = client_data.email
+    client.address = client_data.address
+    client.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(client)
+    
+    return client
+
+@app.delete("/clients/{client_id}")
+async def delete_client(
+    client_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Soft delete a client (mark as inactive)"""
+    client = db.query(Client).filter(Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    client.is_active = False
+    client.updated_at = datetime.utcnow()
+    
+    db.commit()
+    
+    return {"message": "Client deleted successfully"}
+
+# Enhanced Bill Submission with Client Information
+@app.post("/bills/submit", response_model=ConvenienceBillResponse)
+async def submit_convenience_bill_with_client(
+    bill_request: ConvenienceBillCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Submit convenience bill with client information"""
+    convenience_bill = ConvenienceBill(
+        user_id=current_user.id,
+        bill_date=bill_request.bill_date,
+        transport_amount=bill_request.transport_amount,
+        transport_description=bill_request.transport_description,
+        food_amount=bill_request.food_amount,
+        food_description=bill_request.food_description,
+        other_amount=bill_request.other_amount,
+        other_description=bill_request.other_description,
+        transport_to=bill_request.transport_to,
+        transport_from=bill_request.transport_from,
+        means_of_transportation=bill_request.means_of_transportation,
+        fuel_cost=bill_request.fuel_cost,
+        rental_cost=bill_request.rental_cost,
+        general_description=bill_request.general_description,
+        receipt_file_id=bill_request.receipt_file_id,
+        # New client fields
+        client_id=bill_request.client_id,
+        client_company_name=bill_request.client_company_name,
+        client_contact_number=bill_request.client_contact_number,
+        expense_purpose=bill_request.expense_purpose,
+        project_reference=bill_request.project_reference,
+        is_billable=bill_request.is_billable
+    )
+    db.add(convenience_bill)
+    db.commit()
+    db.refresh(convenience_bill)
+    
+    # Get user information for response
+    user = db.query(User).filter(User.id == current_user.id).first()
+    
+    return ConvenienceBillResponse(
+        id=convenience_bill.id,
+        user_id=convenience_bill.user_id,
+        user_name=user.name,
+        bill_date=convenience_bill.bill_date,
+        transport_amount=convenience_bill.transport_amount,
+        transport_description=convenience_bill.transport_description,
+        food_amount=convenience_bill.food_amount,
+        food_description=convenience_bill.food_description,
+        other_amount=convenience_bill.other_amount,
+        other_description=convenience_bill.other_description,
+        transport_to=convenience_bill.transport_to,
+        transport_from=convenience_bill.transport_from,
+        means_of_transportation=convenience_bill.means_of_transportation,
+        fuel_cost=convenience_bill.fuel_cost,
+        rental_cost=convenience_bill.rental_cost,
+        total_amount=convenience_bill.total_amount,
+        general_description=convenience_bill.general_description,
+        receipt_file_id=convenience_bill.receipt_file_id,
+        client_id=convenience_bill.client_id,
+        client_company_name=convenience_bill.client_company_name,
+        client_contact_number=convenience_bill.client_contact_number,
+        expense_purpose=convenience_bill.expense_purpose,
+        project_reference=convenience_bill.project_reference,
+        is_billable=convenience_bill.is_billable,
+        status=convenience_bill.status,
+        approved_by=convenience_bill.approved_by,
+        approval_date=convenience_bill.approval_date,
+        approval_comments=convenience_bill.approval_comments,
+        created_at=convenience_bill.created_at,
+        updated_at=convenience_bill.updated_at
+    )
