@@ -165,25 +165,75 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 
 ```
 Infosonik-App-01/
-├── src/                          # React frontend source
-│   ├── App.js                    # Main React component
-│   └── index.js                  # React entry point
-├── public/                       # React public assets
-│   └── index.html               # HTML template
-├── migrations/                   # Database migrations
-│   └── 001_initial.sql          # Initial database schema
-├── main.py                      # FastAPI backend application
-├── requirements.txt             # Python dependencies
-├── package.json                 # Node.js dependencies
-├── Dockerfile                   # Multi-stage container build
+├── src/                          # React frontend source code
+│   ├── components/               # React components
+│   │   ├── AdminPage.js         # System administration interface
+│   │   ├── BackupPage.js        # Data backup and restore
+│   │   ├── CalendarPage.js      # Enhanced calendar with dual view
+│   │   ├── ChatPage.js          # Team chat integration (Google Chat)
+│   │   ├── Dashboard.js         # Main dashboard and analytics
+│   │   ├── DrivePage.js         # Google Drive file management
+│   │   ├── EmailPage.js         # Gmail integration interface
+│   │   ├── ExpensePage.js       # Expense and bill management
+│   │   ├── FilesPage.js         # File upload and management
+│   │   ├── LeavePage.js         # Leave application system
+│   │   ├── LoginPage.js         # Professional login interface
+│   │   ├── Navbar.js            # Navigation bar component
+│   │   ├── NotesPage.js         # Note creation and management
+│   │   ├── SalesPage.js         # MEDDPICC and sales funnel
+│   │   └── SettingsPage.js      # User settings and preferences
+│   ├── contexts/                # React context providers
+│   │   ├── AuthContext.js       # Authentication state management
+│   │   └── ThemeContext.js      # Theme and UI state
+│   ├── styles/                  # Custom styling
+│   │   └── calendar.css         # Enhanced calendar styling
+│   ├── utils/                   # Utility functions
+│   │   └── api.js               # API client configuration
+│   ├── App.js                   # Main React application component
+│   └── index.js                 # React application entry point
+├── public/                      # Static assets and HTML template
+│   └── index.html              # HTML template with Infosonik branding
+├── migrations/                  # Database schema migrations
+│   └── 001_initial.sql         # Complete database schema
+├── main.py                     # FastAPI backend application
+├── requirements.txt            # Python dependencies
+├── package.json                # Node.js dependencies and scripts
+├── Dockerfile                  # Multi-stage container build
 ├── docker-compose.yml          # Development environment
 ├── docker-compose.prod.yml     # Production environment
-├── .env.prod                   # Production environment variables
-├── deploy.ps1                  # Windows deployment script
-├── deploy.sh                   # Unix deployment script
+├── deploy.sh                   # Unix/Linux deployment script
+├── traefik.yml                 # Traefik reverse proxy configuration
+├── .gitignore                  # Git ignore file (includes .env files)
+├── SESSION_CONTEXT_2025-08-03.md # Development session documentation
 ├── DEPLOYMENT.md               # Detailed deployment guide
-└── README.md                   # This file
+├── SETUP.md                    # Setup and configuration guide
+├── TRAEFIK-DEPLOYMENT.md       # Traefik-specific deployment
+└── README.md                   # Project documentation (this file)
 ```
+
+### Key File Descriptions
+
+#### **Frontend Components**
+- **CalendarPage.js**: Enhanced dual-view calendar with month view, day view, clickable event cards, and Google Calendar integration
+- **AdminPage.js**: Role-based access control, user management, and system statistics
+- **SalesPage.js**: MEDDPICC analysis tools and sales funnel management
+- **ExpensePage.js**: Convenience bill submission and approval workflows
+- **LeavePage.js**: Employee leave application and management system
+- **LoginPage.js**: Professional Infosonik-branded authentication interface
+
+#### **Styling and Assets**
+- **calendar.css**: Custom styling for enhanced calendar interface with proper color themes
+- **index.html**: HTML template with Infosonik Systems Limited branding and meta tags
+
+#### **Backend and Infrastructure**
+- **main.py**: Comprehensive FastAPI application with all endpoints, authentication, and Google integrations
+- **001_initial.sql**: Complete PostgreSQL schema with all tables, relationships, and constraints
+- **docker-compose.prod.yml**: Production deployment configuration with Traefik, SSL, and persistent volumes
+
+#### **Documentation**
+- **SESSION_CONTEXT_2025-08-03.md**: Detailed development session notes and change tracking
+- **DEPLOYMENT.md**: Step-by-step production deployment instructions
+- **SETUP.md**: Local development setup and configuration guide
 
 ## 🚀 Quick Start
 
