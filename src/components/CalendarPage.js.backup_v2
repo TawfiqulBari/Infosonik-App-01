@@ -1,0 +1,374 @@
+import React, { useState, useEffect, useContext } from 'react';
+import {
+  Container,
+  Typography,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  Chip,
+  CircularProgress,
+  IconButton,
+  Tooltip,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Avatar,
+  Paper,
+  Fab,
+  Badge,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Switch,
+  Divider,
+} from '@mui/material';
+import {
+  Add,
+  Event as EventIcon,
+  Refresh,
+  Share,
+  Person,
+  CalendarToday,
+  AccessTime,
+  Description,
+  Google,
+  Edit,
+  Delete,
+  Visibility,
+  LocationOn,
+  People,
+} from '@mui/icons-material';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import '../styles/calendar.css';
+import api from '../utils/api';
+import { toast } from 'react-toastify';
+import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { AuthContext } from '../contexts/AuthContext';
+
+export default function CalendarPage() {
+  const { token } = useContext(AuthContext);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    start_time: '',
+    end_time: '',
+  });
+
+  useEffect(() => {
+    if (token) {
+      fetchEvents();
+    }
+  }, [token]);
+
+  const fetchEvents = async () => {
+    if (!token) {
+      toast.error('Please log in to view events');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.get('/events/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setEvents(response.data);
+      toast.success(`Loaded ${response.data.length} events (including Google Calendar)`);
+    } catch (error) {
+      toast.error('Failed to fetch events');
+      console.error('Fetch events error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!token) {
+      toast.error('Please log in to create events');
+      return;
+    }
+
+    try {
+      await api.post('/events/', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      toast.success('Event created successfully');
+      fetchEvents();
+      setDialogOpen(false);
+      setFormData({ title: '', description: '', start_time: '', end_time: '' });
+    } catch (error) {
+      toast.error('Failed to create event');
+      console.error('Create event error:', error);
+    }
+  };
+
+  const shareEvent = async (eventId) => {
+    if (!token) {
+      toast.error('Please log in to share events');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/events/${eventId}/share`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      toast.success(response.data.message || 'Event shared successfully');
+    } catch (error) {
+      toast.error('Failed to share event');
+      console.error('Share event error:', error);
+    }
+  };
+
+  const eventsForSelectedDate = events.filter(event =>
+    format(new Date(event.start_time), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+  );
+
+  // Check if a date has events for calendar styling
+  const tileClassName = ({ date, view }) => {
+    if (view === 'month') {
+      const dateString = format(date, 'yyyy-MM-dd');
+      const hasEvents = events.some(event => 
+        format(new Date(event.start_time), 'yyyy-MM-dd') === dateString
+      );
+      return hasEvents ? 'react-calendar__tile--hasEvent' : null;
+    }
+    return null;
+  };
+
+  const EventCard = ({ event }) => {
+    const isGoogleEvent = event.google_event_id && event.id < 0;
+    const startTime = new Date(event.start_time);
+    const endTime = new Date(event.end_time);
+    
+    return (
+      <Card 
+        sx={{ 
+          mb: 2, 
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          border: isGoogleEvent ? '1px solid #4285f4' : '1px solid #e0e0e0',
+          borderLeft: isGoogleEvent ? '4px solid #4285f4' : '4px solid #1976d2',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            transform: 'translateY(-1px)'
+          }
+        }}
+      >
+        <CardContent sx={{ p: 2 }}>
+          {/* Header */}
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1a1a1a', mb: 0.5 }}>
+                {event.title}
+              </Typography>
+              {isGoogleEvent && (
+                <Chip 
+                  icon={<Google />} 
+                  label="Google Calendar" 
+                  size="small" 
+                  sx={{ 
+                    backgroundColor: '#e8f0fe',
+                    color: '#1976d2',
+                    fontWeight: 500
+                  }} 
+                />
+              )}
+            </Box>
+            {event.id > 0 && (
+              <Tooltip title="Share Event">
+                <IconButton 
+                  size="small" 
+                  onClick={() => shareEvent(event.id)}
+                  sx={{ 
+                    color: '#1976d2',
+                    '&:hover': { backgroundColor: '#e3f2fd' }
+                  }}
+                >
+                  <Share fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+
+          {/* Time */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, color: '#666' }}>
+            <AccessTime sx={{ fontSize: 16, mr: 1 }} />
+            <Typography variant="body2">
+              {format(startTime, 'h:mm a')} - {format(endTime, 'h:mm a')}
+            </Typography>
+          </Box>
+
+          {/* Description */}
+          {event.description && (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
+              <Description sx={{ fontSize: 16, mr: 1, mt: 0.2, color: '#666' }} />
+              <Typography variant="body2" sx={{ color: '#666', lineHeight: 1.4 }}>
+                {event.description.length > 100 
+                  ? `${event.description.substring(0, 100)}...` 
+                  : event.description}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Footer */}
+          <Divider sx={{ my: 1 }} />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="caption" sx={{ color: '#999' }}>
+              {isGoogleEvent ? 'Synced from Google Calendar' : 'Created in app'}
+            </Typography>
+            {event.attachments && event.attachments.length > 0 && (
+              <Chip 
+                label={`${event.attachments.length} file${event.attachments.length > 1 ? 's' : ''}`}
+                size="small"
+                variant="outlined"
+                sx={{ fontSize: '0.7rem' }}
+              />
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <Container maxWidth="xl">
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
+          Calendar {loading && <CircularProgress size={24} sx={{ ml: 2 }} />}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<Refresh />}
+            onClick={fetchEvents}
+            disabled={loading || !token}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setDialogOpen(true)}
+            disabled={!token}
+          >
+            New Event
+          </Button>
+        </Box>
+      </Box>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={8}>
+          <Card sx={{ mb: 2 }}>
+            <CardContent>
+              <Calendar
+                onChange={setSelectedDate}
+                value={selectedDate}
+                className="custom-calendar"
+                tileClassName={tileClassName}
+                locale="en-US"
+                calendarType="gregory"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <CalendarToday sx={{ mr: 1, color: '#1976d2' }} />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  {format(selectedDate, 'EEEE, MMM dd, yyyy')}
+                </Typography>
+              </Box>
+              
+              {eventsForSelectedDate.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 3 }}>
+                  <EventIcon sx={{ fontSize: 48, color: '#bdbdbd', mb: 1 }} />
+                  <Typography color="textSecondary">
+                    No events scheduled for this day.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box sx={{ maxHeight: '600px', overflowY: 'auto' }}>
+                  {eventsForSelectedDate
+                    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+                    .map((event) => (
+                      <EventCard key={`${event.id}-${event.google_event_id}`} event={event} />
+                    ))}
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Create Event Dialog */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Create New Event</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              multiline
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Start Time"
+              type="datetime-local"
+              value={formData.start_time}
+              onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="End Time"
+              type="datetime-local"
+              value={formData.end_time}
+              onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained">Create</Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
+}

@@ -1179,7 +1179,7 @@ async def get_events(
                     if start_time and end_time:
                         # Add Google Calendar event to results
                         result.append(EventResponse(
-                            id=-abs(hash(g_event.get('id', 'unknown')) % 1000000),  # Negative hash-based ID for Google events
+                            id=-int(g_event.get('id', '0')[:8], 16) if g_event.get('id') else -1,  # Negative ID for Google events
                             title=g_event.get('summary', 'No Title'),
                             description=g_event.get('description', ''),
                             start_time=start_time,
@@ -1951,6 +1951,7 @@ async def submit_convenience_bill(
 
 @app.get("/bills/my-bills", response_model=List[ConvenienceBillResponse])
 async def get_my_convenience_bills(
+    print(f"DEBUG: get_my_convenience_bills called for user {current_user.id if current_user else None}")
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -2447,22 +2448,3 @@ if os.path.exists("static"):
 @app.get("/test/auth")
 async def test_auth(current_user: User = Depends(get_current_user)):
     return {"message": f"Hello {current_user.name}, your ID is {current_user.id}"}
-# Update sharing and invitation endpoints
-
-@app.post("/events/{event_id}/invite")
-async def invite_to_event(
-    event_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    # Example invitation logic
-    try:
-        event = db.query(Event).filter(Event.id == event_id, Event.user_id == current_user.id).first()
-        if not event:
-            return {"message": "Event not found or not owned by the user."}
-
-        # Add invitation logic here (e.g., send email or notification)
-        # This is a placeholder implementation
-        return {"message": "Invitation sent successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to invite: {e}")
