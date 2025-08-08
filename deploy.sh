@@ -27,11 +27,11 @@ fi
 
 # Stop existing containers
 echo "⏹️  Stopping existing containers..."
-docker-compose -f docker-compose.prod.yml --env-file .env.prod down
+docker compose -f docker-compose.prod.yml --env-file .env.prod down
 
 # Build and start containers with production configuration
 echo "🏗️  Building and starting containers..."
-docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 
 # Wait a moment for containers to start
 echo "⏳ Waiting for containers to start..."
@@ -39,11 +39,11 @@ sleep 10
 
 # Check container status
 echo "📊 Checking container status..."
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 
 # Show recent logs
 echo "📄 Recent application logs:"
-docker-compose -f docker-compose.prod.yml logs app --tail=5
+docker compose -f docker-compose.prod.yml logs app --tail=5
 
 echo "✅ Deployment complete!"
 echo "🌐 Application should be available at: https://infsnk-app-01.tawfiqulbari.work/"

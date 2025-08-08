@@ -3,29 +3,21 @@ version: '3.8'
 services:
   traefik:
     image: traefik:v3.0
+    container_name: traefik-prod
     command:
-      - "--api.dashboard=false"  # Disable dashboard in production
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      # SSL/TLS configuration
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      # Redirect HTTP to HTTPS
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--configfile=/etc/traefik/traefik.yml"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/etc/traefik/traefik.yml
       - letsencrypt:/letsencrypt
     networks:
       - app-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
 
   db:
     image: postgres:15
@@ -55,21 +47,9 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      # Main application routes
-      - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.routers.app.entrypoints=websecure"
-      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
-      - "traefik.http.services.app.loadbalancer.server.port=8000"
-      # Google Chat webhook route
-      - "traefik.http.routers.chat-webhook.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/webhook/chat`)"
-      - "traefik.http.routers.chat-webhook.entrypoints=websecure"
-      - "traefik.http.routers.chat-webhook.tls.certresolver=letsencrypt"
 
 volumes:
   postgres_data:
-  letsencrypt:
 
 networks:
   app-network:

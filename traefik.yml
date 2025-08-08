@@ -1,38 +1,59 @@
-# Traefik static configuration
-api:
-  dashboard: true
-  insecure: false  # Set to true for development
+# Traefik v3 Static Configuration
+# Modern, secure defaults for Infosonik App
 
+# Global configuration
+global:
+  checkNewVersion: false  # Disable in production for stability
+  sendAnonymousUsage: false
+
+# API and Dashboard configuration
+api:
+  dashboard: false  # Disabled in production
+  insecure: false
+  debug: false
+
+# EntryPoints configuration
 entryPoints:
   web:
     address: ":80"
     http:
       redirections:
-        entrypoint:
+        entryPoint:
           to: websecure
           scheme: https
           permanent: true
+
   websecure:
     address: ":443"
+    http:
+      tls: {}  # Enable TLS by default
 
+# Providers configuration
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: webapp-01_app-network
+    network: app-network
+    watch: true
+    swarmMode: false
 
+# Certificates configuration
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: your-email@example.com  # Change this
+      email: admin@tawfiqulbari.work
       storage: /letsencrypt/acme.json
       tlsChallenge: {}
+      keyType: EC256  # Prefer ECDSA over RSA
+      preferredChain: "ISRG Root X1"  # Preferred certificate chain
 
-# Optional: Enable access logs
-# accessLog:
-#   filePath: "/var/log/traefik/access.log"
-
-# Optional: Enable Traefik logs
+# Logging configuration (optional)
 # log:
 #   level: INFO
+#   format: json
 #   filePath: "/var/log/traefik/traefik.log"
+
+# Metrics configuration (optional)
+# metrics:
+#   prometheus:
+#     entryPoint: metrics
