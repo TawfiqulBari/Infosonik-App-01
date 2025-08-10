@@ -1,262 +1,605 @@
-### **Latest Updates (August 2025)**
-- **📧 MAJOR: Professional Email Interface**: Complete Outlook-like email functionality with Gmail integration
-- **🔐 Enhanced Security Framework**: Production environment protection and automated security verification
-- **🛡️ Environment Security**: Comprehensive `.env.prod` protection from GitHub exposure
-- **📱 Mobile-Responsive Email**: Full mobile optimization with touch-friendly email management
-- **🎯 Advanced Email Features**: Search, filtering, starring, archiving, compose, reply, and forward functionality
-- **Complete Role-Based Access Control**: Implemented comprehensive RBAC with Admin, HR, Accounts, Sales, and Technical roles
-- **Sales Management Suite**: Full MEDDPICC analysis and Sales Funnel tracking system
-- **HR & Expense Management**: Leave applications and convenience bill submission/approval workflows
-- **Enhanced Google Integrations**: Gmail, Google Drive, and Calendar with advanced sharing capabilities
-- **Database Schema Optimization**: Updated database structure with proper relationships and constraints
-- **Production-Ready OAuth**: Fixed authentication flow with proper error handling and domain restrictions
+# 📧 Infosonik Notes & Calendar App
 
-# 🏢 Infosonik Systems Limited - Notes & Calendar Platform
+A comprehensive full-stack business application featuring **Notes Management**, **Calendar Events**, **Gmail Integration**, **File Management**, **Google Workspace Contacts**, and **Real-time Chat** functionality. Built with **React**, **FastAPI**, **PostgreSQL**, and **Google APIs**.
 
-![Infosonik Logo](public/infosonik-logo.svg)
-
-**Professional workspace application for Infosonik team collaboration and productivity management.**
-
-A modern, enterprise-grade web application built with React frontend and FastAPI backend, featuring professional branding, Google Workspace integration, secure authentication, and comprehensive productivity tools including a **full-featured email interface**.
-
-## 🌐 **Live Production Application**
-
-**🚀 Access the live application:** [https://infsnk-app-01.tawfiqulbari.work](https://infsnk-app-01.tawfiqulbari.work)
-
-- **Status:** ✅ Live and running in production
-- **Environment:** Production-ready deployment with enhanced security
-- **Security:** Restricted to @infosonik.com Google Workspace accounts
-- **Server:** Ubuntu 20.04 LTS on dedicated infrastructure
-- **Email Interface:** 📧 **NEW!** Professional email management now available
-
-## ✨ **Current Production Features** 
-
-### 📧 **NEW: Professional Email Interface** ⭐
-- **🎯 Outlook-like Experience**: Complete email management interface with modern UI/UX
-- **📁 Smart Folder Organization**: Inbox, Sent Items, Drafts, Starred, Archive, and Trash
-- **🔍 Advanced Search & Filtering**: Real-time search with filters for unread, starred, and attachments
-- **✍️ Full Compose Functionality**: Rich email composer with To/CC/BCC fields and attachment support
-- **⚡ Email Actions**: Reply, forward, star, archive, delete, and mark as read/unread
-- **📱 Mobile-Optimized**: Fully responsive design with touch-friendly interactions
-- **🎨 Modern UI Components**: Material-UI based design with smooth animations
-- **🔄 Real-time Synchronization**: Live Gmail integration with instant email operations
-- **📋 Email Preview**: Smart email preview with sender avatars and message snippets
-- **⭐ Smart Starring**: Quick star/unstar functionality with visual indicators
-
-### 🏢 **Enterprise Branding & Design**
-- **🎨 Professional Infosonik Systems Limited Branding**: Custom logo, blue gradient theme, and corporate identity
-- **🖼️ Custom SVG Logo**: Integrated circuit-pattern logo with company branding
-- **🎯 Service Showcase**: IT Solutions, Cloud Services, and Security service chips
-- **🌟 Glass-morphism UI**: Modern backdrop blur effects and gradient backgrounds
-- **📱 Fully Responsive**: Optimized for desktop, tablet, and mobile devices
-
-### 🔐 **Enhanced Security & Authentication**
-- **🛡️ Environment Protection**: Production secrets secured from GitHub exposure
-- **🔒 Automated Security Verification**: Built-in security validation scripts
-- **🛡️ Domain-Restricted Access**: Limited to @infosonik.com Google Workspace accounts only
-- **🔑 Google OAuth Integration**: ✅ **FULLY IMPLEMENTED** - Seamless single sign-on with Google Workspace
-- **🔒 HTTPS Deployment**: Secure SSL/TLS encrypted connections via Traefik reverse proxy
-- **🎯 Authentication Flow**: Complete OAuth 2.0 implementation with proper redirect handling
-- **🌐 Production-Ready**: Live deployment with proper error handling and security
-- **🔐 Environment Backup Strategy**: Automated backup system for production configurations
-
-### ✅ **OAuth Implementation Status**
-- **🔐 Google OAuth 2.0**: ✅ Successfully implemented and tested
-- **🏢 Domain Restriction**: ✅ Limited to @infosonik.com Google Workspace accounts
-- **🔄 Authentication Flow**: ✅ Complete redirect flow with token management
-- **🎯 User Experience**: ✅ Seamless login experience with proper application landing
-- **📱 State Management**: ✅ React context handles authentication state properly
-- **🔒 Secure Token Storage**: ✅ JWT tokens stored securely with proper expiration
-- **🌐 API Integration**: ✅ All API endpoints secured with authentication middleware
-
-### 💻 **Technical Features**
-
-#### **Core Functionality**
-- **📝 Rich Notes Management**: Multi-language syntax highlighting (Python, JavaScript, SQL, etc.)
-- **📅 Calendar Integration**: Google Calendar synchronization with event creation/editing
-- **📁 File Management**: Google Drive integration with upload/download capabilities
-- **👥 User Management**: RBAC system with role-based permissions
-- **📊 Dashboard Analytics**: Comprehensive stats and recent activity overview
-- **🔍 Search Capabilities**: Global search across notes, events, and emails
-- **⚙️ Settings Management**: User preferences and theme customization
-
-#### **📧 Email Management Suite** ⭐ **NEW**
-- **📥 Gmail Integration**: Full Gmail API integration with real-time synchronization
-- **📁 Folder Management**: Automatic folder detection and management
-- **🎯 Advanced Filtering**: Filter by read status, stars, attachments, and custom queries
-- **📊 Email Analytics**: Message counts and folder statistics
-- **🔄 Automatic Sync**: Real-time email updates and notifications
-- **📱 Mobile Email Experience**: Touch-optimized interface for mobile email management
-- **⚙️ Email Settings**: Customizable email display preferences
-
-#### **Enterprise Features**
-- **🏢 Role-Based Access Control (RBAC)**: Admin, HR, Accounts, Sales, Technical roles
-- **📈 Sales Pipeline Management**: MEDDPICC analysis framework implementation
-- **💰 Financial Tracking**: Revenue forecasting and deal progression monitoring
-- **📊 Reporting System**: Comprehensive analytics and report generation
-- **🔄 Workflow Automation**: Automated approval processes and notifications
-- **🎯 Performance Metrics**: KPI tracking and team performance analytics
-
-#### **Sales Management Suite**
-- **🎯 MEDDPICC Framework**: Complete sales qualification methodology
-- **📊 Sales Funnel Tracking**: Visual pipeline with stage progression
-- **💰 Revenue Forecasting**: Predictive analytics and trend analysis
-- **📈 Deal Management**: Comprehensive opportunity tracking
-- **🤝 Client Relationship Management**: Customer interaction history
-
-#### **HR & Administrative Tools**
-- **📋 Leave Management**: 
-  - Employee leave application system
-  - Manager approval workflow
-  - Leave balance tracking
-  - Calendar integration
-- **💳 Expense Management**: 
-  - Convenience bill submission
-  - Receipt upload functionality
-  - Multi-level approval process
-  - Expense reporting and analytics
-- **👥 Employee Directory**: Team member profiles and contact information
-- **📊 Administrative Reporting**: HR analytics and compliance tracking
-
-#### **Google Workspace Integration**
-- **📧 Gmail**: 
-  - ✅ **COMPLETE EMAIL INTERFACE** - Professional Outlook-like experience
-  - ✅ Email reading, composing, and management
-  - ✅ Advanced search and filtering capabilities
-  - ✅ Mobile-responsive design
-- **📅 Google Calendar**: 
-  - ✅ Event creation, editing, and management
-  - ✅ Calendar sharing and collaboration
-  - ✅ Meeting scheduling and reminders
-- **☁️ Google Drive**: 
-  - ✅ File upload and download
-  - ✅ Folder management and organization
-  - ✅ Document sharing and permissions
-
-#### **Technical Infrastructure**
-- **🐳 Containerized Deployment**: Docker-based production environment
-- **🔄 Reverse Proxy**: Traefik with automatic SSL certificate management
-- **🗄️ PostgreSQL Database**: Robust data storage with proper relationships
-- **🔐 JWT Authentication**: Secure token-based authentication system
-- **📱 Responsive Design**: Mobile-first approach with Material-UI components
-- **🔧 Environment Security**: Protected production configurations
-
-## 📊 **Current Deployment Status**
-
-### 🌐 **Production Environment Details**
-- **🌍 Domain**: https://infsnk-app-01.tawfiqulbari.work
-- **📊 Status**: ✅ Active and stable
-- **🔒 SSL**: ✅ Automatically managed by Traefik
-- **⚡ Performance**: Optimized for production workloads
-- **🛡️ Security**: Enhanced environment protection implemented
-- **📧 Email Service**: ✅ Professional email interface live
-- **🔄 Uptime**: 24/7 availability with health checks
-- **📱 Mobile Support**: ✅ Fully responsive across all devices
-
-### 🏗️ **Infrastructure Specifications**
-- **🖥️ Server**: Ubuntu 20.04 LTS
-- **🐳 Container Runtime**: Docker with Docker Compose
-- **🔄 Reverse Proxy**: Traefik v2.x with Let's Encrypt
-- **🗄️ Database**: PostgreSQL 15 with persistent volumes
-- **🔐 Security**: Production environment variable protection
-- **📊 Monitoring**: Health checks and automated restarts
-- **💾 Backup**: Automated database and configuration backups
-
-### 🎨 **UI/UX Enhancements**
-- **🎨 Infosonik Professional Theme**: Corporate blue (#2563eb) and purple (#7c3aed) palette
-- **🌟 Modern Components**: Glass-morphism effects and smooth animations
-- **📱 Mobile-First Design**: Touch-optimized interface for all screen sizes
-- **🌙 Theme Support**: Light and dark mode compatibility
-- **📧 Email Interface**: Professional Outlook-inspired design
-- **⚡ Performance**: Optimized loading and smooth interactions
-
-## 🛠️ Technology Stack
-
-### Frontend
-- **⚛️ React 18** with TypeScript support
-- **🎨 Material-UI (MUI)** for component library
-- **🎯 React Router** for navigation
-- **📊 Context API** for state management
-- **📧 Advanced Email Components** with mobile optimization
-
-### Backend
-- **🚀 FastAPI** (Python) with async support
-- **🗄️ PostgreSQL** database with SQLAlchemy ORM
-- **🔐 OAuth 2.0** with Google Workspace integration
-- **📧 Gmail API** for email functionality
-- **☁️ Google APIs** (Drive, Calendar) integration
-- **🔒 JWT** token-based authentication
-
-### Infrastructure
-- **🐳 Docker** containerization
-- **🔄 Traefik** reverse proxy with SSL
-- **🌐 Let's Encrypt** automatic SSL certificates
-- **🛡️ Environment Security** with automated protection
-- **📊 Health Monitoring** and automatic recovery
-
-## 🔐 **Security Features**
-
-### **Environment Protection** 🛡️ **NEW**
-- **🔒 Production Secret Management**: `.env.prod` protected from GitHub exposure
-- **🔧 Automated Security Verification**: Built-in security validation scripts
-- **📋 Environment Backup Strategy**: Timestamped backup system
-- **🛡️ Git Protection**: Comprehensive `.gitignore` configuration
-- **📖 Security Documentation**: Complete production setup guide
-
-### **Authentication Security**
-- **🏢 Domain Restriction**: Google Workspace @infosonik.com only
-- **🔑 OAuth 2.0**: Secure Google authentication flow
-- **🔒 JWT Tokens**: Secure session management
-- **🛡️ API Security**: All endpoints protected with middleware
-
-## 🚀 **Recent Major Updates**
-
-### **📧 Email Interface (August 2025)** ⭐ **MAJOR FEATURE**
-- Complete professional email management interface
-- Outlook-inspired design with modern Material-UI components
-- Full mobile responsiveness with touch optimization
-- Advanced search, filtering, and email organization
-- Real-time Gmail API integration
-- Compose, reply, forward functionality
-- Smart folder management and email actions
-
-### **🔐 Security Enhancements (August 2025)**
-- Production environment protection framework
-- Automated security verification system
-- Enhanced `.gitignore` with comprehensive protection
-- Environment backup strategy implementation
-- Complete security documentation
-
-### **🎯 Previous Updates**
-- Role-Based Access Control implementation
-- Sales Management Suite with MEDDPICC
-- HR and Expense Management workflows
-- Enhanced Google Workspace integrations
-- Database optimization and relationships
-
-## 📋 **Getting Started**
-
-### **Production Deployment**
-1. **Environment Setup**: Use `PRODUCTION_SETUP.md` guide
-2. **Security Verification**: Run `./scripts/verify-env-security.sh`
-3. **Deployment**: `docker compose -f docker-compose.prod.yml up -d`
-4. **Access**: Navigate to your configured domain
-
-### **Development Setup**
-1. **Clone Repository**: `git clone [repository-url]`
-2. **Environment**: Copy `.env.example` to `.env`
-3. **Install Dependencies**: `npm install`
-4. **Start Development**: `docker compose up -d`
-
-## 📞 **Support & Contact**
-
-**Infosonik Systems Limited**
-- **🌐 Website**: [Company Website]
-- **📧 Email**: [Contact Email]
-- **🏢 Address**: [Company Address]
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20App-blue)](https://infsnk-app-01.tawfiqulbari.work/)
+[![React](https://img.shields.io/badge/Frontend-React%2018-61dafb)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791)](https://postgresql.org/)
 
 ---
 
-**💼 Enterprise-Ready | 🔒 Secure | 📱 Mobile-Optimized | 📧 Full Email Suite**
+## 🚀 **Key Features**
 
-*Built with ❤️ for Infosonik Systems Limited team productivity and collaboration.*
+### **📧 Professional Email Management**
+- **Gmail Integration** - Full inbox, sent items, drafts, and trash management
+- **Email Composition** - Rich text editing with reply, forward, and compose features
+- **Contact Suggestions** - Google Workspace contacts with intelligent autocomplete
+- **File Attachments** - Upload and attach multiple files with progress tracking
+- **Smart Search** - Advanced email search with filtering and sorting
+- **Email Notifications** - Real-time unread email alerts for dashboard
+- **Mobile Responsive** - Complete mobile email experience
+
+### **📝 Advanced Notes System**
+- **Rich Text Editor** - Full-featured note editing with formatting
+- **Categorization** - Organize notes with tags and categories
+- **Search & Filter** - Find notes quickly with advanced search
+- **Version History** - Track changes and restore previous versions
+- **Collaborative Features** - Share and collaborate on notes
+- **Export Options** - Download notes in multiple formats
+
+### **📅 Intelligent Calendar**
+- **Google Calendar Sync** - Bidirectional calendar synchronization
+- **Event Management** - Create, edit, and delete calendar events
+- **Meeting Scheduling** - Smart meeting scheduling with availability
+- **Reminders & Alerts** - Customizable event notifications
+- **Calendar Views** - Month, week, day, and agenda views
+- **Event Sharing** - Share events with team members
+
+### **📁 File Management System**
+- **Cloud Storage** - Secure file upload and storage
+- **File Organization** - Folders, tags, and metadata management
+- **Preview Support** - In-browser file previews for common formats
+- **Version Control** - Track file versions and changes
+- **Sharing & Permissions** - Control file access and sharing
+- **Integration** - Seamless integration with email attachments
+
+### **💬 Real-time Communication**
+- **Chat Integration** - Google Chat integration for team communication
+- **Real-time Messaging** - Instant messaging with WebSocket support
+- **Notification System** - Push notifications for messages and updates
+- **Presence Status** - Online/offline status tracking
+
+### **🔐 Enterprise Security**
+- **Google OAuth 2.0** - Secure authentication with Google Workspace
+- **Role-Based Access Control (RBAC)** - Granular permissions system
+- **Session Management** - Secure session handling and token refresh
+- **Data Encryption** - End-to-end encryption for sensitive data
+- **Audit Logging** - Comprehensive activity tracking
+
+---
+
+## 🏗️ **Technology Stack**
+
+### **Frontend**
+- **React 18** - Modern React with hooks and functional components
+- **Material-UI (MUI)** - Professional UI component library
+- **React Router** - Client-side routing and navigation
+- **Axios** - HTTP client for API communication
+- **Date-fns** - Modern date manipulation library
+- **React-Toastify** - Elegant notification system
+
+### **Backend**
+- **FastAPI** - High-performance Python web framework
+- **SQLAlchemy** - Advanced ORM with relationship mapping
+- **PostgreSQL** - Robust relational database
+- **Pydantic** - Data validation and serialization
+- **Uvicorn** - ASGI server for production deployment
+- **Alembic** - Database migration management
+
+### **Google APIs Integration**
+- **Gmail API** - Full email management capabilities
+- **Google Calendar API** - Calendar synchronization and management
+- **Google People API** - Workspace contacts integration
+- **Google Drive API** - File storage and management
+- **Google Chat API** - Team communication features
+
+### **Infrastructure**
+- **Docker & Docker Compose** - Containerized deployment
+- **Nginx** - Reverse proxy and static file serving
+- **SSL/TLS** - HTTPS encryption with Let's Encrypt
+- **GitHub Actions** - CI/CD pipeline automation
+- **Proxmox VE** - Virtualized infrastructure
+
+---
+
+## 📱 **User Interface**
+
+### **Email Interface**
+- **Three-panel Layout** - Folder sidebar, email list, and email viewer
+- **Responsive Design** - Optimized for desktop, tablet, and mobile
+- **Contact Autocomplete** - Smart recipient suggestions while typing
+- **Attachment Management** - Drag-and-drop file uploads with progress
+- **Rich Text Compose** - Professional email composition interface
+- **Advanced Filtering** - Filter by unread, starred, attachments, etc.
+
+### **Dashboard**
+- **Unified Overview** - All modules accessible from central dashboard
+- **Real-time Notifications** - Live updates for emails, events, and messages
+- **Quick Actions** - One-click access to common tasks
+- **Activity Feed** - Recent activity across all modules
+- **Customizable Widgets** - Personalized dashboard layout
+
+### **Mobile Experience**
+- **Progressive Web App (PWA)** - App-like experience on mobile
+- **Touch-Optimized** - Native mobile gestures and interactions
+- **Offline Support** - Limited functionality without internet
+- **Push Notifications** - Native mobile notifications
+
+---
+
+## 🔧 **Installation & Setup**
+
+### **Prerequisites**
+```bash
+# System Requirements
+- Docker & Docker Compose
+- Node.js 18+
+- Python 3.11+
+- PostgreSQL 15+
+- Git
+```
+
+### **Google API Setup**
+1. **Create Google Cloud Project**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create new project or select existing one
+   - Enable required APIs:
+     - Gmail API
+     - Google Calendar API
+     - Google People API (Contacts)
+     - Google Drive API
+
+2. **Configure OAuth 2.0**
+   ```bash
+   # Create OAuth 2.0 credentials
+   - Application type: Web application
+   - Authorized redirect URIs: https://your-domain.com/auth/callback
+   - Download credentials JSON file
+   ```
+
+3. **Set Environment Variables**
+   ```bash
+   # Copy environment template
+   cp .env.example .env.prod
+   
+   # Edit with your Google API credentials
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   GOOGLE_REDIRECT_URI=https://your-domain.com/auth/callback
+   ```
+
+### **Quick Start**
+```bash
+# Clone the repository
+git clone https://github.com/TawfiqulBari/Infosonik-App-01.git
+cd Infosonik-App-01
+
+# Configure environment
+cp .env.example .env.prod
+# Edit .env.prod with your configuration
+
+# Deploy with Docker
+./deploy.sh
+
+# Access the application
+https://your-domain.com
+```
+
+### **Development Setup**
+```bash
+# Install backend dependencies
+pip install -r requirements.txt
+
+# Install frontend dependencies
+npm install
+
+# Run database migrations
+python apply_all_migrations.py
+
+# Start development servers
+# Backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Frontend
+npm start
+```
+
+---
+
+## 📧 **Email Features Deep Dive**
+
+### **Gmail Integration**
+- **Full API Access** - Complete Gmail functionality through Google APIs
+- **Real-time Sync** - Live synchronization with Gmail servers
+- **Folder Management** - Inbox, Sent, Drafts, Starred, Trash support
+- **Label Support** - Custom Gmail labels and categories
+- **Thread Management** - Email conversation threading
+
+### **Contact Management**
+- **Google Workspace Contacts** - Access to organization directory
+- **Smart Autocomplete** - Contact suggestions with typing
+- **Contact Search** - Search by name, email, or organization
+- **Visual Contact Cards** - Profile pictures and organization info
+- **Multiple Recipients** - Support for To, CC, BCC fields
+
+### **File Attachments**
+- **Multi-file Upload** - Attach multiple files simultaneously
+- **File Type Support** - Documents, images, archives, presentations
+- **Upload Progress** - Real-time upload progress tracking
+- **File Management** - Preview, remove, and organize attachments
+- **Size Limits** - Configurable file size restrictions
+- **Virus Scanning** - Optional file scanning for security
+
+### **Email Composition**
+- **Rich Text Editor** - Full formatting capabilities
+- **Template System** - Pre-defined email templates
+- **Auto-save Drafts** - Automatic draft saving while composing
+- **Signature Support** - Custom email signatures
+- **Spell Check** - Built-in spell checking
+- **Mobile Optimized** - Full mobile compose experience
+
+---
+
+## 🔐 **Security Features**
+
+### **Authentication & Authorization**
+- **Google OAuth 2.0** - Secure authentication with Google Workspace
+- **JWT Tokens** - Secure API authentication
+- **Refresh Tokens** - Automatic token renewal
+- **Session Management** - Secure session handling
+- **Multi-factor Authentication (MFA)** - Optional 2FA support
+
+### **Data Protection**
+- **Encryption at Rest** - Database encryption
+- **Encryption in Transit** - HTTPS/TLS encryption
+- **API Rate Limiting** - Protection against abuse
+- **Input Validation** - Comprehensive data validation
+- **SQL Injection Protection** - Parameterized queries
+- **XSS Protection** - Cross-site scripting prevention
+
+### **Access Control**
+- **Role-Based Permissions** - Granular access control
+- **Resource-Level Security** - Per-resource permissions
+- **Audit Logging** - Comprehensive activity tracking
+- **IP Whitelisting** - Optional IP-based restrictions
+- **Session Timeout** - Automatic session expiration
+
+---
+
+## 🚀 **Deployment**
+
+### **Production Deployment**
+```bash
+# Clone and configure
+git clone https://github.com/TawfiqulBari/Infosonik-App-01.git
+cd Infosonik-App-01
+
+# Set up environment
+cp .env.example .env.prod
+# Edit .env.prod with production values
+
+# Deploy with SSL
+./deploy.sh
+
+# Verify deployment
+docker compose -f docker-compose.prod.yml ps
+```
+
+### **Infrastructure Requirements**
+- **CPU**: 2+ cores recommended
+- **RAM**: 4GB+ recommended
+- **Storage**: 50GB+ for files and database
+- **Network**: HTTPS with valid SSL certificate
+- **Backup**: Regular database and file backups
+
+### **Monitoring & Maintenance**
+- **Health Checks** - Automated container health monitoring
+- **Log Aggregation** - Centralized logging with rotation
+- **Performance Monitoring** - Resource usage tracking
+- **Database Maintenance** - Regular vacuum and analyze
+- **Security Updates** - Regular dependency updates
+
+---
+
+## 📊 **API Documentation**
+
+### **Interactive API Docs**
+- **Swagger UI**: `https://your-domain.com/docs`
+- **ReDoc**: `https://your-domain.com/redoc`
+- **OpenAPI Schema**: `https://your-domain.com/openapi.json`
+
+### **Key API Endpoints**
+
+#### **Authentication**
+```http
+GET  /auth/google          # Initiate Google OAuth
+GET  /auth/callback        # OAuth callback handler
+GET  /auth/me             # Get current user info
+POST /auth/logout         # Logout user
+```
+
+#### **Email Management**
+```http
+GET    /gmail/messages          # Get email messages
+POST   /gmail/send             # Send email with attachments
+GET    /gmail/search           # Search emails
+PUT    /gmail/messages/{id}/star # Toggle email star
+POST   /gmail/messages/{id}/mark-read # Mark as read
+DELETE /gmail/messages/{id}    # Delete email
+```
+
+#### **Contacts**
+```http
+GET /contacts              # Get Google Workspace contacts
+GET /contacts/search       # Search contacts by query
+```
+
+#### **File Management**
+```http
+POST GET /files/upload     # Upload files
+GET  /files/               # List files
+GET  /files/{id}/download  # Download file
+```
+
+#### **Notes & Calendar**
+```http
+GET    /notes/             # Get notes
+POST   /notes/             # Create note
+PUT    /notes/{id}         # Update note
+DELETE /notes/{id}         # Delete note
+
+GET    /events/            # Get calendar events
+POST   /events/            # Create event
+PUT    /events/{id}        # Update event
+DELETE /events/{id}        # Delete event
+```
+
+---
+
+## 🔧 **Configuration**
+
+### **Environment Variables**
+```bash
+# Database Configuration
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+
+# Google API Configuration
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=https://your-domain.com/auth/callback
+
+# Application Configuration
+SECRET_KEY=your_secret_key_here
+ENVIRONMENT=production
+DEBUG=false
+
+# Email Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+
+# File Upload Configuration
+MAX_FILE_SIZE=10485760  # 10MB
+ALLOWED_FILE_TYPES=pdf,doc,docx,txt,jpg,jpeg,png,gif,zip
+
+# Security Configuration
+SESSION_TIMEOUT=3600    # 1 hour
+JWT_EXPIRATION=86400   # 24 hours
+RATE_LIMIT=100         # requests per minute
+```
+
+### **Docker Configuration**
+```yaml
+# docker-compose.prod.yml
+version: '3.8'
+services:
+  app:
+    build: .
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certs:/etc/ssl/certs
+```
+
+---
+
+## 🧪 **Testing**
+
+### **Backend Testing**
+```bash
+# Install test dependencies
+pip install pytest pytest-asyncio pytest-cov
+
+# Run tests
+pytest tests/ -v --cov=main
+
+# Run specific test categories
+pytest tests/test_email.py -v
+pytest tests/test_contacts.py -v
+pytest tests/test_auth.py -v
+```
+
+### **Frontend Testing**
+```bash
+# Install test dependencies
+npm install --save-dev @testing-library/react @testing-library/jest-dom
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run end-to-end tests
+npm run test:e2e
+```
+
+### **API Testing**
+```bash
+# Test email functionality
+curl -X GET "https://your-domain.com/gmail/messages" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Test contact search
+curl -X GET "https://your-domain.com/contacts/search?query=john" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Test file upload
+curl -X POST "https://your-domain.com/files/upload" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "file=@test.pdf"
+```
+
+---
+
+## 🔍 **Troubleshooting**
+
+### **Common Issues**
+
+#### **Contact Suggestions Not Working**
+```bash
+# Verify Google People API is enabled
+# Check OAuth scopes include contacts.readonly
+# Ensure user is authenticated with Google
+# Check browser console for API errors
+```
+
+#### **File Upload Issues**
+```bash
+# Check file size limits
+# Verify file type restrictions
+# Ensure upload directory permissions
+# Check disk space availability
+```
+
+#### **Email Integration Problems**
+```bash
+# Verify Gmail API is enabled
+# Check OAuth scopes and permissions
+# Test API credentials
+# Review rate limiting settings
+```
+
+### **Debug Mode**
+```bash
+# Enable debug logging
+DEBUG=true
+LOG_LEVEL=debug
+
+# View detailed logs
+docker logs infosonik-app-01-app-1 -f
+
+# Check database connections
+docker exec -it infosonik-app-01-db-1 psql -U postgres -d infosonik
+```
+
+---
+
+## 📈 **Performance Optimization**
+
+### **Backend Optimization**
+- **Database Indexing** - Optimized queries with proper indexes
+- **Caching Strategy** - Redis caching for frequently accessed data
+- **Connection Pooling** - Efficient database connection management
+- **Background Tasks** - Celery for asynchronous processing
+- **API Rate Limiting** - Prevent abuse and ensure stability
+
+### **Frontend Optimization**
+- **Code Splitting** - Lazy loading of React components
+- **Bundle Optimization** - Webpack optimization for smaller bundles
+- **Image Optimization** - Compressed and optimized images
+- **CDN Integration** - Static asset delivery via CDN
+- **Service Workers** - Caching for offline functionality
+
+### **Infrastructure Optimization**
+- **Load Balancing** - Multiple instance deployment
+- **Container Optimization** - Optimized Docker images
+- **Database Tuning** - PostgreSQL performance optimization
+- **Monitoring** - Comprehensive performance monitoring
+- **Auto-scaling** - Automatic resource scaling based on load
+
+---
+
+## 🤝 **Contributing**
+
+### **Development Guidelines**
+1. **Fork the repository** and create a feature branch
+2. **Follow code standards** - ESLint for frontend, Black for backend
+3. **Write tests** - Maintain test coverage above 80%
+4. **Update documentation** - Update README and API docs
+5. **Create pull request** - Detailed description of changes
+
+### **Code Style**
+- **Frontend**: ESLint + Prettier configuration
+- **Backend**: Black + isort + flake8 configuration
+- **Commits**: Conventional commit messages
+- **Documentation**: Comprehensive inline comments
+
+---
+
+## 📄 **License**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👤 **Author**
+
+**Tawfiqul Bari**
+- GitHub: [@TawfiqulBari](https://github.com/TawfiqulBari)
+- LinkedIn: [Tawfiqul Bari](https://linkedin.com/in/tawfiqulbari)
+- Email: tawfiqul.bari@example.com
+
+---
+
+## 🌟 **Acknowledgments**
+
+- **Google APIs** - Gmail, Calendar, Contacts, and Drive integration
+- **Material-UI** - Excellent React component library
+- **FastAPI** - Modern Python web framework
+- **React Community** - Comprehensive ecosystem
+- **Open Source Contributors** - Various libraries and tools
+
+---
+
+## 📞 **Support**
+
+### **Getting Help**
+- **Documentation**: Comprehensive setup and usage guides
+- **Issues**: Report bugs via GitHub Issues
+- **Discussions**: Community support via GitHub Discussions
+- **Email**: Direct support for deployment assistance
+
+### **Professional Services**
+- **Custom Development** - Feature additions and customizations
+- **Deployment Support** - Professional deployment assistance
+- **Training & Consulting** - Team training and consulting services
+- **Maintenance Contracts** - Ongoing maintenance and support
+
+---
+
+**⭐ Star this repository if you find it helpful!**
+
+[![GitHub stars](https://img.shields.io/github/stars/TawfiqulBari/Infosonik-App-01.svg?style=social&label=Star)](https://github.com/TawfiqulBari/Infosonik-App-01)
+[![GitHub forks](https://img.shields.io/github/forks/TawfiqulBari/Infosonik-App-01.svg?style=social&label=Fork)](https://github.com/TawfiqulBari/Infosonik-App-01/fork)
+[![GitHub watchers](https://img.shields.io/github/watchers/TawfiqulBari/Infosonik-App-01.svg?style=social&label=Watch)](https://github.com/TawfiqulBari/Infosonik-App-01)
+
+---
+
+*Last updated: $(date '+%B %d, %Y')*
