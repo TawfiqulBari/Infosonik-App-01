@@ -2657,7 +2657,10 @@ if os.path.exists("static"):
             full_path.startswith("drive/") or
             full_path.startswith("gmail/") or
             full_path.startswith("chat/") or
-            full_path.startswith("webhook/")
+            full_path.startswith("webhook/") or
+            full_path.startswith("contacts") or
+            full_path.startswith("email-notifications") or
+            full_path.startswith("test/")
         ):
             raise HTTPException(status_code=404, detail="Not found")
         return FileResponse('static/index.html')

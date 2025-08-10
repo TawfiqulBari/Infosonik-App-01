@@ -36,6 +36,7 @@ import {
   MenuList,
   ListItemAvatar,
   Chip,
+  LinearProgress,
 } from '@mui/material';
 import {
   Inbox as InboxIcon,
@@ -60,6 +61,7 @@ import {
   ArrowBack as ArrowBackIcon,
   Person as PersonIcon,
   ExpandMore as ExpandMoreIcon,
+  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -223,6 +225,92 @@ const ContactTextField = ({
   );
 };
 
+// File attachment component
+const FileAttachments = ({ attachments, onAddFiles, onRemoveFile, uploading }) => {
+  const fileInputRef = React.useRef();
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length > 0) {
+      onAddFiles(files);
+    }
+    // Reset the input
+    event.target.value = '';
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  return (
+    <Box>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+        multiple
+        accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip,.xlsx,.xls,.ppt,.pptx"
+      />
+      
+      <Button
+        startIcon={uploading ? <CircularProgress size={16} /> : <CloudUploadIcon />}
+        variant="outlined"
+        onClick={handleFileSelect}
+        disabled={uploading}
+        size="small"
+      >
+        {uploading ? 'Uploading...' : 'Attach Files'}
+      </Button>
+      
+      {attachments.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Attachments ({attachments.length})
+          </Typography>
+          <List dense>
+            {attachments.map((file, index) => (
+              <ListItem
+                key={index}
+                sx={{
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  mb: 1,
+                  bgcolor: 'background.paper'
+                }}
+              >
+                <ListItemIcon>
+                  <AttachmentIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={file.name}
+                  secondary={formatFileSize(file.size)}
+                />
+                <IconButton
+                  size="small"
+                  onClick={() => onRemoveFile(index)}
+                  disabled={uploading}
+                >
+                  <Close />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
 export default function EmailPage() {
   const { user } = useAuth();
   const theme = useTheme();
@@ -250,6 +338,8 @@ export default function EmailPage() {
   const [contacts, setContacts] = useState([]);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [attachments, setAttachments] = useState([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
 
   // Compose email state
   const [composeData, setComposeData] = useState({
@@ -319,13 +409,52 @@ export default function EmailPage() {
     setContactsLoading(true);
     try {
       const response = await api.get('/contacts');
-      setContacts(response.data);
+      console.log('Contacts loaded:', response.data);
+      setContacts(response.data || []);
     } catch (error) {
       console.error('Failed to load contacts:', error);
       toast.info('Contact suggestions unavailable');
+      setContacts([]);
     } finally {
       setContactsLoading(false);
     }
+  }, []);
+
+  const uploadFiles = useCallback(async (files) => {
+    setUploadingFiles(true);
+    const uploadedFiles = [];
+    
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await api.post('/files/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        uploadedFiles.push({
+          id: response.data.id,
+          name: file.name,
+          size: file.size,
+          url: response.data.url,
+        });
+      }
+      
+      setAttachments(prev => [...prev, ...uploadedFiles]);
+      toast.success(`${files.length} file(s) attached successfully`);
+    } catch (error) {
+      console.error('Failed to upload files:', error);
+      toast.error('Failed to upload files');
+    } finally {
+      setUploadingFiles(false);
+    }
+  }, []);
+
+  const removeAttachment = useCallback((index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   }, []);
 
   const filteredEmails = useMemo(() => {
@@ -440,6 +569,7 @@ export default function EmailPage() {
       subject: '',
       body: '',
     });
+    setAttachments([]);
     setComposeOpen(true);
   }, []);
 
@@ -451,6 +581,7 @@ export default function EmailPage() {
       subject: `Re: ${email.subject}`,
       body: `\n\n--- Original Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
     });
+    setAttachments([]);
     setComposeOpen(true);
   }, []);
 
@@ -462,18 +593,25 @@ export default function EmailPage() {
       subject: `Fwd: ${email.subject}`,
       body: `\n\n--- Forwarded Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
     });
+    setAttachments([]);
     setComposeOpen(true);
   }, []);
 
   const handleCloseCompose = useCallback(() => {
     setComposeOpen(false);
+    setAttachments([]);
   }, []);
 
   const sendEmail = useCallback(async () => {
     try {
       setSendingEmail(true);
       
-      await api.post('/gmail/send', composeData);
+      const emailData = {
+        ...composeData,
+        attachments: attachments.map(file => file.id), // Send file IDs
+      };
+      
+      await api.post('/gmail/send', emailData);
       toast.success('Email sent successfully');
       setComposeOpen(false);
       setComposeData({
@@ -483,13 +621,14 @@ export default function EmailPage() {
         subject: '',
         body: '',
       });
+      setAttachments([]);
     } catch (error) {
       console.error('Failed to send email:', error);
       toast.error('Failed to send email');
     } finally {
       setSendingEmail(false);
     }
-  }, [composeData]);
+  }, [composeData, attachments]);
 
   const searchEmails = useCallback(async () => {
     if (!searchQuery.trim()) {
@@ -1076,6 +1215,14 @@ export default function EmailPage() {
           </Typography>
         </Box>
       )}
+      
+      {!contactsLoading && contacts.length === 0 && (
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="caption" color="text.secondary">
+            No contacts available
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 
@@ -1172,7 +1319,7 @@ export default function EmailPage() {
         <EditIcon />
       </Fab>
 
-      {/* Compose Dialog with Contact Suggestions */}
+      {/* Compose Dialog with Contact Suggestions and File Attachments */}
       <Dialog 
         open={composeOpen} 
         onClose={handleCloseCompose}
@@ -1182,7 +1329,7 @@ export default function EmailPage() {
         disableEscapeKeyDown={false}
         PaperProps={{
           sx: { 
-            height: isMobile ? '100vh' : '80vh', 
+            height: isMobile ? '100vh' : '85vh', 
             display: 'flex', 
             flexDirection: 'column',
             maxWidth: '100%',
@@ -1198,6 +1345,14 @@ export default function EmailPage() {
                 size="small" 
                 label={`${contacts.length} contacts`} 
                 color="primary" 
+                variant="outlined" 
+              />
+            )}
+            {attachments.length > 0 && (
+              <Chip 
+                size="small" 
+                label={`${attachments.length} files`} 
+                color="secondary" 
                 variant="outlined" 
               />
             )}
@@ -1253,10 +1408,17 @@ export default function EmailPage() {
             size="small"
           />
           
+          <FileAttachments
+            attachments={attachments}
+            onAddFiles={uploadFiles}
+            onRemoveFile={removeAttachment}
+            uploading={uploadingFiles}
+          />
+          
           <TextField
             fullWidth
             multiline
-            rows={isMobile ? 10 : 12}
+            rows={isMobile ? 8 : 10}
             label="Message"
             value={composeData.body}
             onChange={(e) => setComposeData(prev => ({ ...prev, body: e.target.value }))}
@@ -1266,9 +1428,6 @@ export default function EmailPage() {
         </DialogContent>
         
         <DialogActions sx={{ p: 3, gap: 1, flexWrap: 'wrap', flexShrink: 0 }}>
-          <Button startIcon={<AttachmentIcon />} variant="outlined" disabled>
-            Attach Files
-          </Button>
           <Box sx={{ flexGrow: 1 }} />
           <Button onClick={handleCloseCompose} variant="outlined">
             Cancel
@@ -1279,7 +1438,7 @@ export default function EmailPage() {
             disabled={sendingEmail || !composeData.to.trim() || !composeData.subject.trim()}
             startIcon={sendingEmail ? <CircularProgress size={16} /> : <SendIcon />}
           >
-            Send
+            {sendingEmail ? 'Sending...' : 'Send'}
           </Button>
         </DialogActions>
       </Dialog>
