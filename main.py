@@ -676,6 +676,7 @@ def get_google_oauth_flow():
             "https://www.googleapis.com/auth/gmail.readonly",
             "https://www.googleapis.com/auth/gmail.send",
             "https://www.googleapis.com/auth/gmail.modify"
+                        "https://www.googleapis.com/auth/contacts.readonly"
         ]
     )
     flow.redirect_uri = GOOGLE_REDIRECT_URI
@@ -3499,4 +3500,200 @@ async def search_gmail_messages(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to search emails: {str(e)}")
+
+
+# Google Contacts API integration
+@app.get("/contacts")
+async def get_contacts(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get Google Workspace contacts"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Google Workspace access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = build('people', 'v1', credentials=credentials)
+        
+        # Get connections (contacts)
+        results = service.people().connections().list(
+            resourceName='people/me',
+            personFields='names,emailAddresses,organizations,photos,phoneNumbers',
+            pageSize=1000
+        ).execute()
+        
+        connections = results.get('connections', [])
+        formatted_contacts = []
+        
+        for person in connections:
+            # Extract name
+            names = person.get('names', [])
+            name = names[0].get('displayName', '') if names else ''
+            
+            # Extract email addresses
+            emails = person.get('emailAddresses', [])
+            email_list = []
+            for email in emails:
+                email_list.append({
+                    'email': email.get('value', ''),
+                    'type': email.get('type', 'other')
+                })
+            
+            # Extract organization
+            orgs = person.get('organizations', [])
+            organization = orgs[0].get('name', '') if orgs else ''
+            
+            # Extract photo
+            photos = person.get('photos', [])
+            photo_url = photos[0].get('url', '') if photos else ''
+            
+            # Extract phone numbers
+            phones = person.get('phoneNumbers', [])
+            phone_list = []
+            for phone in phones:
+                phone_list.append({
+                    'number': phone.get('value', ''),
+                    'type': phone.get('type', 'other')
+                })
+            
+            if email_list:  # Only include contacts with email addresses
+                formatted_contacts.append({
+                    'id': person.get('resourceName', ''),
+                    'name': name,
+                    'emails': email_list,
+                    'organization': organization,
+                    'photo': photo_url,
+                    'phones': phone_list,
+                    'primary_email': email_list[0]['email'] if email_list else ''
+                })
+        
+        # Sort by name
+        formatted_contacts.sort(key=lambda x: x['name'].lower() if x['name'] else 'zzz')
+        
+        return formatted_contacts
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch contacts: {str(e)}")
+
+@app.get("/contacts/search")
+async def search_contacts(
+    query: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Search Google Workspace contacts"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Google Workspace access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = build('people', 'v1', credentials=credentials)
+        
+        # Search for contacts
+        results = service.people().searchContacts(
+            query=query,
+            pageSize=50,
+            readMask='names,emailAddresses,organizations,photos'
+        ).execute()
+        
+        search_results = results.get('results', [])
+        formatted_contacts = []
+        
+        for result in search_results:
+            person = result.get('person', {})
+            
+            # Extract name
+            names = person.get('names', [])
+            name = names[0].get('displayName', '') if names else ''
+            
+            # Extract email addresses
+            emails = person.get('emailAddresses', [])
+            email_list = []
+            for email in emails:
+                email_list.append({
+                    'email': email.get('value', ''),
+                    'type': email.get('type', 'other')
+                })
+            
+            # Extract organization
+            orgs = person.get('organizations', [])
+            organization = orgs[0].get('name', '') if orgs else ''
+            
+            # Extract photo
+            photos = person.get('photos', [])
+            photo_url = photos[0].get('url', '') if photos else ''
+            
+            if email_list:  # Only include contacts with email addresses
+                formatted_contacts.append({
+                    'id': person.get('resourceName', ''),
+                    'name': name,
+                    'emails': email_list,
+                    'organization': organization,
+                    'photo': photo_url,
+                    'primary_email': email_list[0]['email'] if email_list else ''
+                })
+        
+        return formatted_contacts
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to search contacts: {str(e)}")
+
+@app.get("/gmail/unread-notifications")
+async def get_unread_notifications(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get unread email notifications for dashboard"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = get_gmail_service(credentials)
+        
+        # Get unread messages
+        results = service.users().messages().list(
+            userId='me',
+            maxResults=10,
+            q='in:inbox is:unread'
+        ).execute()
+        
+        messages = results.get('messages', [])
+        notifications = []
+        
+        for msg in messages[:5]:  # Get only first 5 for dashboard
+            try:
+                message = service.users().messages().get(
+                    userId='me',
+                    id=msg['id'],
+                    format='metadata'
+                ).execute()
+                
+                headers = {h['name']: h['value'] for h in message['payload'].get('headers', [])}
+                
+                # Get snippet
+                snippet = message.get('snippet', '')[:100] + '...' if len(message.get('snippet', '')) > 100 else message.get('snippet', '')
+                
+                notifications.append({
+                    'id': message['id'],
+                    'subject': headers.get('Subject', 'No Subject'),
+                    'from': headers.get('From', 'Unknown Sender'),
+                    'snippet': snippet,
+                    'timestamp': message.get('internalDate', ''),
+                    'thread_id': message['threadId']
+                })
+            except Exception as e:
+                continue
+        
+        return {
+            'total_unread': len(messages),
+            'recent_emails': notifications
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch email notifications: {str(e)}")
 

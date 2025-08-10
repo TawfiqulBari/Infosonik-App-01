@@ -13,6 +13,10 @@ import {
   ListItemIcon,
   ListItemText,
   Chip,
+  Alert,
+  IconButton,
+  Badge,
+  Divider,
 } from '@mui/material';
 import {
   Notes as NotesIcon,
@@ -22,12 +26,18 @@ import {
   Description,
   Schedule,
   AttachFile,
+  Email as EmailIcon,
+  MailOutline as MailOutlineIcon,
+  Person as PersonIcon,
+  Refresh as RefreshIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
+import api from '../utils/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -36,13 +46,17 @@ export default function Dashboard() {
     notes: 0,
     events: 0,
     files: 0,
+    unread_emails: 0,
   });
   const [recentNotes, setRecentNotes] = useState([]);
   const [recentEvents, setRecentEvents] = useState([]);
+  const [emailNotifications, setEmailNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [emailLoading, setEmailLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchEmailNotifications();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -53,11 +67,12 @@ export default function Dashboard() {
         axios.get('/files/'),
       ]);
 
-      setStats({
+      setStats(prevStats => ({
+        ...prevStats,
         notes: notesRes.data.length,
         events: eventsRes.data.length,
         files: filesRes.data.length,
-      });
+      }));
 
       setRecentNotes(notesRes.data.slice(0, 5));
       setRecentEvents(eventsRes.data.slice(0, 5));
@@ -69,7 +84,33 @@ export default function Dashboard() {
     }
   };
 
-  const StatCard = ({ icon, title, value, color, onClick }) => (
+  const fetchEmailNotifications = async () => {
+    setEmailLoading(true);
+    try {
+      const response = await api.get('/gmail/unread-notifications');
+      setEmailNotifications(response.data.recent_emails || []);
+      setStats(prevStats => ({
+        ...prevStats,
+        unread_emails: response.data.total_unread || 0,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch email notifications:', error);
+      // Don't show error to user, just continue without email data
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const formatEmailDate = (timestamp) => {
+    try {
+      const date = new Date(parseInt(timestamp));
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return 'Unknown time';
+    }
+  };
+
+  const StatCard = ({ icon, title, value, color, onClick, isLoading = false }) => (
     <Card
       sx={{
         cursor: 'pointer',
@@ -89,6 +130,11 @@ export default function Dashboard() {
           <Typography variant="h6" component="div">
             {title}
           </Typography>
+          {isLoading && (
+            <IconButton size="small" sx={{ ml: 'auto' }}>
+              <RefreshIcon className="animate-spin" />
+            </IconButton>
+          )}
         </Box>
         <Typography variant="h3" component="div" color={color}>
           {value}
@@ -143,7 +189,7 @@ export default function Dashboard() {
       </Box>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<NotesIcon />}
             title="Notes"
@@ -152,7 +198,7 @@ export default function Dashboard() {
             onClick={() => navigate('/notes')}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<EventIcon />}
             title="Events"
@@ -161,7 +207,7 @@ export default function Dashboard() {
             onClick={() => navigate('/calendar')}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<FolderIcon />}
             title="Files"
@@ -170,10 +216,24 @@ export default function Dashboard() {
             onClick={() => navigate('/files')}
           />
         </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={
+              <Badge badgeContent={stats.unread_emails > 0 ? stats.unread_emails : 0} color="error">
+                <EmailIcon />
+              </Badge>
+            }
+            title="Unread Emails"
+            value={stats.unread_emails}
+            color="warning.main"
+            onClick={() => navigate('/email')}
+            isLoading={emailLoading}
+          />
+        </Grid>
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -226,7 +286,7 @@ export default function Dashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -268,6 +328,126 @@ export default function Dashboard() {
                     </ListItem>
                   ))}
                 </List>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" component="h2">
+                  <Badge badgeContent={stats.unread_emails} color="error">
+                    <NotificationsIcon sx={{ mr: 1 }} />
+                  </Badge>
+                  Recent Emails
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <IconButton 
+                    onClick={fetchEmailNotifications}
+                    size="small"
+                    disabled={emailLoading}
+                  >
+                    <RefreshIcon className={emailLoading ? 'animate-spin' : ''} />
+                  </IconButton>
+                  <Button
+                    startIcon={<EmailIcon />}
+                    onClick={() => navigate('/email')}
+                    size="small"
+                  >
+                    View All
+                  </Button>
+                </Box>
+              </Box>
+              
+              {emailLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </Box>
+              ) : emailNotifications.length === 0 ? (
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <MailOutlineIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                  <Typography color="textSecondary">
+                    No new emails! 📭
+                  </Typography>
+                </Box>
+              ) : (
+                <List dense>
+                  {emailNotifications.map((email) => (
+                    <ListItem 
+                      key={email.id} 
+                      sx={{ 
+                        px: 0,
+                        cursor: 'pointer',
+                        '&:hover': { backgroundColor: 'action.hover' },
+                        borderRadius: 1
+                      }}
+                      onClick={() => navigate('/email')}
+                    >
+                      <ListItemIcon>
+                        <Avatar sx={{ width: 32, height: 32, bgcolor: 'warning.main' }}>
+                          <MailOutlineIcon sx={{ fontSize: 16 }} />
+                        </Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              fontWeight: 600,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {email.subject || '(No Subject)'}
+                          </Typography>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography 
+                              variant="caption" 
+                              color="textSecondary"
+                              sx={{
+                                display: 'block',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              From: {email.from.split('<')[0].trim() || email.from}
+                            </Typography>
+                            <Typography 
+                              variant="caption" 
+                              color="textSecondary"
+                              sx={{
+                                display: 'block',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {email.snippet}
+                            </Typography>
+                            <Typography variant="caption" color="primary.main" sx={{ fontWeight: 500 }}>
+                              {formatEmailDate(email.timestamp)}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+              
+              {stats.unread_emails > emailNotifications.length && (
+                <>
+                  <Divider sx={{ my: 1 }} />
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    {stats.unread_emails - emailNotifications.length} more unread emails
+                  </Alert>
+                </>
               )}
             </CardContent>
           </Card>
