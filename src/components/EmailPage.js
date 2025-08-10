@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   Box,
-  Container,
   Typography,
   Paper,
   List,
@@ -12,7 +11,6 @@ import {
   IconButton,
   TextField,
   InputAdornment,
-  Chip,
   Avatar,
   Divider,
   Button,
@@ -57,7 +55,6 @@ import {
   MailOutline as MailOutlineIcon,
   Menu as MenuIcon,
   ArrowBack as ArrowBackIcon,
-  Contacts as ContactsIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -71,7 +68,6 @@ export default function EmailPage() {
   const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   
   // State management
   const [selectedFolder, setSelectedFolder] = useState('inbox');
@@ -94,15 +90,18 @@ export default function EmailPage() {
   const [error, setError] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [contactsLoading, setContactsLoading] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
-  // Compose email state - separate arrays for autocomplete
+  // Compose email state - keep as object with string values for text fields
   const [composeData, setComposeData] = useState({
-    to: [],
-    cc: [],
-    bcc: [],
+    to: '',
+    cc: '',
+    bcc: '',
     subject: '',
     body: '',
-    attachments: []
+    toList: [],
+    ccList: [],
+    bccList: [],
   });
 
   // Load folders and emails on mount
@@ -118,7 +117,6 @@ export default function EmailPage() {
       setFolders(response.data);
     } catch (error) {
       console.error('Failed to load folders:', error);
-      // Keep default folders if API fails
     }
   }, []);
 
@@ -126,31 +124,24 @@ export default function EmailPage() {
     setLoading(true);
     try {
       const response = await api.get('/gmail/messages', {
-        params: {
-          max_results: 50
-        }
+        params: { max_results: 50 }
       });
       
-      // Transform the backend response to match our component structure
       const transformedEmails = response.data.map(email => {
-        // Parse sender info
         const senderMatch = email.sender.match(/(.*?)\s*<(.+?)>/) || [null, email.sender, email.sender];
         const senderName = senderMatch[1]?.trim() || email.sender;
         const senderEmail = senderMatch[2] || email.sender;
 
         return {
           id: email.id,
-          from: {
-            name: senderName,
-            email: senderEmail
-          },
+          from: { name: senderName, email: senderEmail },
           to: [{ email: email.recipient }],
           subject: email.subject,
           preview: email.body ? email.body.substring(0, 200) + '...' : '',
           body: email.body || '',
           timestamp: new Date(email.timestamp),
           isRead: email.is_read,
-          isStarred: false, // Will be updated when we have label info
+          isStarred: false,
           hasAttachments: email.has_attachments,
           folder: selectedFolder,
           labels: []
@@ -175,7 +166,6 @@ export default function EmailPage() {
       setContacts(response.data);
     } catch (error) {
       console.error('Failed to load contacts:', error);
-      // Don't show error to user, just continue without contacts
     } finally {
       setContactsLoading(false);
     }
@@ -183,7 +173,6 @@ export default function EmailPage() {
 
   const filteredEmails = useMemo(() => {
     let filtered = emails.filter(email => {
-      // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
@@ -194,7 +183,6 @@ export default function EmailPage() {
         );
       }
       
-      // Additional filters
       if (filterBy === 'unread' && email.isRead) return false;
       if (filterBy === 'starred' && !email.isStarred) return false;
       if (filterBy === 'attachments' && !email.hasAttachments) return false;
@@ -202,7 +190,6 @@ export default function EmailPage() {
       return true;
     });
 
-    // Sort emails
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'timestamp':
@@ -221,13 +208,9 @@ export default function EmailPage() {
 
   const formatEmailDate = useCallback((date) => {
     try {
-      if (isToday(date)) {
-        return format(date, 'h:mm a');
-      } else if (isYesterday(date)) {
-        return 'Yesterday';
-      } else {
-        return format(date, 'MMM dd');
-      }
+      if (isToday(date)) return format(date, 'h:mm a');
+      if (isYesterday(date)) return 'Yesterday';
+      return format(date, 'MMM dd');
     } catch (error) {
       return 'Unknown';
     }
@@ -294,99 +277,83 @@ export default function EmailPage() {
 
   const handleCompose = useCallback(() => {
     setComposeData({
-      to: [],
-      cc: [],
-      bcc: [],
+      to: '',
+      cc: '',
+      bcc: '',
       subject: '',
       body: '',
-      attachments: []
+      toList: [],
+      ccList: [],
+      bccList: [],
     });
     setComposeOpen(true);
   }, []);
 
   const handleReply = useCallback((email) => {
     setComposeData({
-      to: [email.from.email],
-      cc: [],
-      bcc: [],
+      to: email.from.email,
+      cc: '',
+      bcc: '',
       subject: `Re: ${email.subject}`,
       body: `\n\n--- Original Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
-      attachments: []
+      toList: [email.from.email],
+      ccList: [],
+      bccList: [],
     });
     setComposeOpen(true);
   }, []);
 
   const handleForward = useCallback((email) => {
     setComposeData({
-      to: [],
-      cc: [],
-      bcc: [],
+      to: '',
+      cc: '',
+      bcc: '',
       subject: `Fwd: ${email.subject}`,
       body: `\n\n--- Forwarded Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
-      attachments: []
+      toList: [],
+      ccList: [],
+      bccList: [],
     });
     setComposeOpen(true);
   }, []);
 
+  // Safe dialog close handler
+  const handleCloseCompose = useCallback(() => {
+    setComposeOpen(false);
+  }, []);
+
   const sendEmail = useCallback(async () => {
     try {
-      setLoading(true);
+      setSendingEmail(true);
       
-      // Convert arrays back to comma-separated strings for API
       const emailData = {
-        to: Array.isArray(composeData.to) 
-          ? composeData.to.map(item => typeof item === 'string' ? item : item.primary_email || item.email || item).join(', ')
-          : composeData.to,
-        cc: Array.isArray(composeData.cc) 
-          ? composeData.cc.map(item => typeof item === 'string' ? item : item.primary_email || item.email || item).join(', ')
-          : composeData.cc,
-        bcc: Array.isArray(composeData.bcc) 
-          ? composeData.bcc.map(item => typeof item === 'string' ? item : item.primary_email || item.email || item).join(', ')
-          : composeData.bcc,
+        to: composeData.to,
+        cc: composeData.cc,
+        bcc: composeData.bcc,
         subject: composeData.subject,
         body: composeData.body,
-        attachments: composeData.attachments
       };
       
       await api.post('/gmail/send', emailData);
       toast.success('Email sent successfully');
       setComposeOpen(false);
       setComposeData({
-        to: [],
-        cc: [],
-        bcc: [],
+        to: '',
+        cc: '',
+        bcc: '',
         subject: '',
         body: '',
-        attachments: []
+        toList: [],
+        ccList: [],
+        bccList: [],
       });
     } catch (error) {
       console.error('Failed to send email:', error);
       toast.error('Failed to send email');
     } finally {
-      setLoading(false);
+      setSendingEmail(false);
     }
   }, [composeData]);
-
-  // Separate update functions for each field
-  const updateToField = useCallback((value) => {
-    setComposeData(prev => ({ ...prev, to: value }));
-  }, []);
-
-  const updateCcField = useCallback((value) => {
-    setComposeData(prev => ({ ...prev, cc: value }));
-  }, []);
-
-  const updateBccField = useCallback((value) => {
-    setComposeData(prev => ({ ...prev, bcc: value }));
-  }, []);
-
-  const updateSubjectField = useCallback((value) => {
-    setComposeData(prev => ({ ...prev, subject: value }));
-  }, []);
-
-  const updateBodyField = useCallback((value) => {
-    setComposeData(prev => ({ ...prev, body: value }));
-  }, []);
 
   const searchEmails = useCallback(async () => {
     if (!searchQuery.trim()) {
@@ -407,10 +374,7 @@ export default function EmailPage() {
 
         return {
           id: email.id,
-          from: {
-            name: senderName,
-            email: senderEmail
-          },
+          from: { name: senderName, email: senderEmail },
           to: [{ email: email.to }],
           subject: email.subject,
           preview: email.snippet || '',
@@ -933,162 +897,6 @@ export default function EmailPage() {
     );
   });
 
-  const ComposeDialog = React.memo(() => (
-    <Dialog 
-      open={composeOpen} 
-      onClose={() => setComposeOpen(false)}
-      maxWidth="md"
-      fullWidth
-      fullScreen={isMobile}
-      PaperProps={{
-        sx: { 
-          height: isMobile ? '100vh' : '80vh', 
-          display: 'flex', 
-          flexDirection: 'column',
-          maxWidth: '100%',
-          overflow: 'hidden'
-        }
-      }}
-    >
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">Compose Email</Typography>
-        <IconButton onClick={() => setComposeOpen(false)}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      
-      <DialogContent sx={{ 
-        flexGrow: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: 2,
-        overflow: 'auto'
-      }}>
-        {/* To Field with Contacts Autocomplete */}
-        <Autocomplete
-          multiple
-          freeSolo
-          options={contacts}
-          getOptionLabel={(option) => {
-            if (typeof option === 'string') return option;
-            return option.name ? `${option.name} <${option.primary_email}>` : option.primary_email;
-          }}
-          value={composeData.to || []}
-          onChange={(event, newValue) => updateToField(newValue)}
-          renderOption={(props, option) => (
-            <Box component="li" {...props}>
-              <ListItemAvatar>
-                <Avatar sx={{ width: 32, height: 32 }}>
-                  {option.photo ? (
-                    <img src={option.photo} alt={option.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                  ) : (
-                    option.name ? option.name.charAt(0).toUpperCase() : <PersonIcon />
-                  )}
-                </Avatar>
-              </ListItemAvatar>
-              <Box>
-                <Typography variant="body2">{option.name || option.primary_email}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {option.primary_email}
-                </Typography>
-                {option.organization && (
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    {option.organization}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          )}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="To"
-              placeholder="Enter email addresses..."
-              fullWidth
-            />
-          )}
-          loading={contactsLoading}
-        />
-        
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Autocomplete
-            multiple
-            freeSolo
-            options={contacts}
-            getOptionLabel={(option) => {
-              if (typeof option === 'string') return option;
-              return option.name ? `${option.name} <${option.primary_email}>` : option.primary_email;
-            }}
-            value={composeData.cc || []}
-            onChange={(event, newValue) => updateCcField(newValue)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="CC"
-                placeholder="CC recipients..."
-                sx={{ flexGrow: 1, minWidth: 150 }}
-              />
-            )}
-          />
-          <Autocomplete
-            multiple
-            freeSolo
-            options={contacts}
-            getOptionLabel={(option) => {
-              if (typeof option === 'string') return option;
-              return option.name ? `${option.name} <${option.primary_email}>` : option.primary_email;
-            }}
-            value={composeData.bcc || []}
-            onChange={(event, newValue) => updateBccField(newValue)}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="BCC"
-                placeholder="BCC recipients..."
-                sx={{ flexGrow: 1, minWidth: 150 }}
-              />
-            )}
-          />
-        </Box>
-        
-        <TextField
-          fullWidth
-          label="Subject"
-          value={composeData.subject}
-          onChange={(e) => updateSubjectField(e.target.value)}
-        />
-        
-        <TextField
-          fullWidth
-          multiline
-          rows={isMobile ? 8 : 12}
-          label="Message"
-          value={composeData.body}
-          onChange={(e) => updateBodyField(e.target.value)}
-          sx={{ flexGrow: 1 }}
-        />
-      </DialogContent>
-      
-      <DialogActions sx={{ p: 3, gap: 1, flexWrap: 'wrap' }}>
-        <Button startIcon={<AttachmentIcon />} variant="outlined">
-          Attach Files
-        </Button>
-        <Box sx={{ flexGrow: 1 }} />
-        <Button onClick={() => setComposeOpen(false)}>
-          Cancel
-        </Button>
-        <Button 
-          variant="contained" 
-          onClick={sendEmail}
-          disabled={loading || !composeData.to || composeData.to.length === 0 || !composeData.subject}
-          startIcon={loading ? <CircularProgress size={16} /> : <SendIcon />}
-        >
-          Send
-        </Button>
-      </DialogActions>
-    </Dialog>
-  ));
-
   const drawer = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Toolbar>
@@ -1147,9 +955,7 @@ export default function EmailPage() {
         variant="temporary"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        ModalProps={{
-          keepMounted: true,
-        }}
+        ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
@@ -1212,8 +1018,105 @@ export default function EmailPage() {
         <EditIcon />
       </Fab>
 
-      {/* Compose Dialog */}
-      <ComposeDialog />
+      {/* Compose Dialog - Simple and Stable */}
+      <Dialog 
+        open={composeOpen} 
+        onClose={handleCloseCompose}
+        maxWidth="md"
+        fullWidth
+        fullScreen={isMobile}
+        disableEscapeKeyDown={false}
+        PaperProps={{
+          sx: { 
+            height: isMobile ? '100vh' : '80vh', 
+            display: 'flex', 
+            flexDirection: 'column',
+            maxWidth: '100%',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+          <Typography variant="h6">Compose Email</Typography>
+          <IconButton onClick={handleCloseCompose}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent sx={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 2,
+          overflow: 'auto',
+          p: 3
+        }}>
+          <TextField
+            fullWidth
+            label="To"
+            placeholder="Enter email addresses..."
+            value={composeData.to}
+            onChange={(e) => setComposeData(prev => ({ ...prev, to: e.target.value }))}
+            size="small"
+          />
+          
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <TextField
+              label="CC"
+              placeholder="CC recipients..."
+              value={composeData.cc}
+              onChange={(e) => setComposeData(prev => ({ ...prev, cc: e.target.value }))}
+              sx={{ flexGrow: 1, minWidth: 150 }}
+              size="small"
+            />
+            <TextField
+              label="BCC"
+              placeholder="BCC recipients..."
+              value={composeData.bcc}
+              onChange={(e) => setComposeData(prev => ({ ...prev, bcc: e.target.value }))}
+              sx={{ flexGrow: 1, minWidth: 150 }}
+              size="small"
+            />
+          </Box>
+          
+          <TextField
+            fullWidth
+            label="Subject"
+            value={composeData.subject}
+            onChange={(e) => setComposeData(prev => ({ ...prev, subject: e.target.value }))}
+            size="small"
+          />
+          
+          <TextField
+            fullWidth
+            multiline
+            rows={isMobile ? 10 : 12}
+            label="Message"
+            value={composeData.body}
+            onChange={(e) => setComposeData(prev => ({ ...prev, body: e.target.value }))}
+            sx={{ flexGrow: 1 }}
+            placeholder="Type your message here..."
+          />
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3, gap: 1, flexWrap: 'wrap', flexShrink: 0 }}>
+          <Button startIcon={<AttachmentIcon />} variant="outlined" disabled>
+            Attach Files
+          </Button>
+          <Box sx={{ flexGrow: 1 }} />
+          <Button onClick={handleCloseCompose} variant="outlined">
+            Cancel
+          </Button>
+          <Button 
+            variant="contained" 
+            onClick={sendEmail}
+            disabled={sendingEmail || !composeData.to.trim() || !composeData.subject.trim()}
+            startIcon={sendingEmail ? <CircularProgress size={16} /> : <SendIcon />}
+          >
+            Send
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Context Menu */}
       <Menu
