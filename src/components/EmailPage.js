@@ -31,8 +31,11 @@ import {
   Alert,
   useTheme,
   useMediaQuery,
-  Autocomplete,
+  Popper,
+  ClickAwayListener,
+  MenuList,
   ListItemAvatar,
+  Chip,
 } from '@mui/material';
 import {
   Inbox as InboxIcon,
@@ -56,6 +59,7 @@ import {
   Menu as MenuIcon,
   ArrowBack as ArrowBackIcon,
   Person as PersonIcon,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -63,6 +67,161 @@ import { toast } from 'react-toastify';
 import { format, isToday, isYesterday } from 'date-fns';
 
 const DRAWER_WIDTH = 280;
+
+// Contact suggestion component
+const ContactSuggestion = ({ contacts, onSelectContact, anchorEl, open, onClose }) => {
+  const [filteredContacts, setFilteredContacts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = contacts.filter(contact =>
+        contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contact.primary_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (contact.organization && contact.organization.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredContacts(filtered.slice(0, 5)); // Show max 5 suggestions
+    } else {
+      setFilteredContacts([]);
+    }
+  }, [contacts, searchTerm]);
+
+  const handleContactSelect = (contact) => {
+    onSelectContact(contact);
+    setSearchTerm('');
+    setFilteredContacts([]);
+    onClose();
+  };
+
+  if (!open || filteredContacts.length === 0) {
+    return null;
+  }
+
+  return (
+    <Popper
+      open={open}
+      anchorEl={anchorEl}
+      placement="bottom-start"
+      style={{ zIndex: 1300 }}
+    >
+      <Paper sx={{ mt: 1, maxWidth: 400, maxHeight: 300, overflow: 'auto' }}>
+        <MenuList>
+          {filteredContacts.map((contact) => (
+            <MenuItem
+              key={contact.id}
+              onClick={() => handleContactSelect(contact)}
+              sx={{ py: 1 }}
+            >
+              <ListItemAvatar>
+                <Avatar sx={{ width: 32, height: 32 }}>
+                  {contact.photo ? (
+                    <img 
+                      src={contact.photo} 
+                      alt={contact.name} 
+                      style={{ width: '100%', height: '100%', borderRadius: '50%' }} 
+                    />
+                  ) : (
+                    contact.name ? contact.name.charAt(0).toUpperCase() : <PersonIcon />
+                  )}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={contact.name || contact.primary_email}
+                secondary={
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {contact.primary_email}
+                    </Typography>
+                    {contact.organization && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {contact.organization}
+                      </Typography>
+                    )}
+                  </Box>
+                }
+              />
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Paper>
+    </Popper>
+  );
+};
+
+// Enhanced TextField with contact suggestions
+const ContactTextField = ({ 
+  label, 
+  value, 
+  onChange, 
+  contacts, 
+  placeholder,
+  size = "small",
+  sx = {},
+  ...props 
+}) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [inputValue, setInputValue] = useState(value);
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onChange(newValue);
+    
+    // Show suggestions if typing and there's text
+    if (newValue && newValue.length > 1) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleFocus = (e) => {
+    setAnchorEl(e.currentTarget);
+    if (inputValue && inputValue.length > 1) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleSelectContact = (contact) => {
+    const newValue = inputValue ? `${inputValue}, ${contact.primary_email}` : contact.primary_email;
+    setInputValue(newValue);
+    onChange(newValue);
+    setShowSuggestions(false);
+  };
+
+  const handleClickAway = () => {
+    setShowSuggestions(false);
+  };
+
+  return (
+    <ClickAwayListener onClickAway={handleClickAway}>
+      <Box sx={{ position: 'relative', ...sx }}>
+        <TextField
+          {...props}
+          label={label}
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={handleFocus}
+          placeholder={placeholder}
+          size={size}
+          fullWidth
+        />
+        <ContactSuggestion
+          contacts={contacts}
+          onSelectContact={handleSelectContact}
+          anchorEl={anchorEl}
+          open={showSuggestions}
+          onClose={() => setShowSuggestions(false)}
+        />
+      </Box>
+    </ClickAwayListener>
+  );
+};
 
 export default function EmailPage() {
   const { user } = useAuth();
@@ -92,16 +251,13 @@ export default function EmailPage() {
   const [contactsLoading, setContactsLoading] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
 
-  // Compose email state - keep as object with string values for text fields
+  // Compose email state
   const [composeData, setComposeData] = useState({
     to: '',
     cc: '',
     bcc: '',
     subject: '',
     body: '',
-    toList: [],
-    ccList: [],
-    bccList: [],
   });
 
   // Load folders and emails on mount
@@ -166,6 +322,7 @@ export default function EmailPage() {
       setContacts(response.data);
     } catch (error) {
       console.error('Failed to load contacts:', error);
+      toast.info('Contact suggestions unavailable');
     } finally {
       setContactsLoading(false);
     }
@@ -282,9 +439,6 @@ export default function EmailPage() {
       bcc: '',
       subject: '',
       body: '',
-      toList: [],
-      ccList: [],
-      bccList: [],
     });
     setComposeOpen(true);
   }, []);
@@ -296,9 +450,6 @@ export default function EmailPage() {
       bcc: '',
       subject: `Re: ${email.subject}`,
       body: `\n\n--- Original Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
-      toList: [email.from.email],
-      ccList: [],
-      bccList: [],
     });
     setComposeOpen(true);
   }, []);
@@ -310,14 +461,10 @@ export default function EmailPage() {
       bcc: '',
       subject: `Fwd: ${email.subject}`,
       body: `\n\n--- Forwarded Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
-      toList: [],
-      ccList: [],
-      bccList: [],
     });
     setComposeOpen(true);
   }, []);
 
-  // Safe dialog close handler
   const handleCloseCompose = useCallback(() => {
     setComposeOpen(false);
   }, []);
@@ -326,15 +473,7 @@ export default function EmailPage() {
     try {
       setSendingEmail(true);
       
-      const emailData = {
-        to: composeData.to,
-        cc: composeData.cc,
-        bcc: composeData.bcc,
-        subject: composeData.subject,
-        body: composeData.body,
-      };
-      
-      await api.post('/gmail/send', emailData);
+      await api.post('/gmail/send', composeData);
       toast.success('Email sent successfully');
       setComposeOpen(false);
       setComposeData({
@@ -343,9 +482,6 @@ export default function EmailPage() {
         bcc: '',
         subject: '',
         body: '',
-        toList: [],
-        ccList: [],
-        bccList: [],
       });
     } catch (error) {
       console.error('Failed to send email:', error);
@@ -922,6 +1058,24 @@ export default function EmailPage() {
       <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
         <FolderList />
       </Box>
+      
+      {/* Contact Status */}
+      {contactsLoading && (
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CircularProgress size={12} />
+            Loading contacts...
+          </Typography>
+        </Box>
+      )}
+      
+      {contacts.length > 0 && (
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography variant="caption" color="text.secondary">
+            {contacts.length} contacts loaded
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 
@@ -1018,7 +1172,7 @@ export default function EmailPage() {
         <EditIcon />
       </Fab>
 
-      {/* Compose Dialog - Simple and Stable */}
+      {/* Compose Dialog with Contact Suggestions */}
       <Dialog 
         open={composeOpen} 
         onClose={handleCloseCompose}
@@ -1037,7 +1191,17 @@ export default function EmailPage() {
         }}
       >
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-          <Typography variant="h6">Compose Email</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h6">Compose Email</Typography>
+            {contacts.length > 0 && (
+              <Chip 
+                size="small" 
+                label={`${contacts.length} contacts`} 
+                color="primary" 
+                variant="outlined" 
+              />
+            )}
+          </Box>
           <IconButton onClick={handleCloseCompose}>
             <CloseIcon />
           </IconButton>
@@ -1051,29 +1215,31 @@ export default function EmailPage() {
           overflow: 'auto',
           p: 3
         }}>
-          <TextField
-            fullWidth
+          <ContactTextField
             label="To"
-            placeholder="Enter email addresses..."
+            placeholder="Enter email addresses... (type to see suggestions)"
             value={composeData.to}
-            onChange={(e) => setComposeData(prev => ({ ...prev, to: e.target.value }))}
+            onChange={(value) => setComposeData(prev => ({ ...prev, to: value }))}
+            contacts={contacts}
             size="small"
           />
           
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <TextField
+            <ContactTextField
               label="CC"
               placeholder="CC recipients..."
               value={composeData.cc}
-              onChange={(e) => setComposeData(prev => ({ ...prev, cc: e.target.value }))}
+              onChange={(value) => setComposeData(prev => ({ ...prev, cc: value }))}
+              contacts={contacts}
               sx={{ flexGrow: 1, minWidth: 150 }}
               size="small"
             />
-            <TextField
+            <ContactTextField
               label="BCC"
               placeholder="BCC recipients..."
               value={composeData.bcc}
-              onChange={(e) => setComposeData(prev => ({ ...prev, bcc: e.target.value }))}
+              onChange={(value) => setComposeData(prev => ({ ...prev, bcc: value }))}
+              contacts={contacts}
               sx={{ flexGrow: 1, minWidth: 150 }}
               size="small"
             />
