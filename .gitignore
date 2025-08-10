@@ -8,12 +8,16 @@ yarn-error.log*
 build/
 dist/
 
-# Environment variables
+# Environment variables - IMPORTANT: Keep production secrets safe!
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.prod
+.env.prod.backup*
+.env*
+!.env.example
 
 # Python
 __pycache__/
@@ -87,30 +91,28 @@ dmypy.json
 # Backup files
 *.bak
 *.backup
+*.backup*
 
 # Local configuration
 config.local.js
 config.local.json
-.env.prod
-
-# Additional environment files
-.env.prod
-.env.prod.backup
-.env.production.local
-
-# Environment files
-.env*
-!.env.example
 
 # Migration backup files
 migrations/*.backup*
-*.backup*
 
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
+# SSL Certificates (if any)
+*.pem
+*.key
+*.crt
+certs/*.pem
+certs/*.key
+certs/*.crt
 
-# Node modules and build
-node_modules/
-build/
+# Deployment scripts with sensitive data
+deploy-secrets.sh
+deploy-prod.sh
+
+
+# Sensitive deployment scripts
+scripts/*-prod*
+scripts/*-secret*

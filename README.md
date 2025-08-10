@@ -1,4 +1,9 @@
 ### **Latest Updates (August 2025)**
+- **📧 MAJOR: Professional Email Interface**: Complete Outlook-like email functionality with Gmail integration
+- **🔐 Enhanced Security Framework**: Production environment protection and automated security verification
+- **🛡️ Environment Security**: Comprehensive `.env.prod` protection from GitHub exposure
+- **📱 Mobile-Responsive Email**: Full mobile optimization with touch-friendly email management
+- **🎯 Advanced Email Features**: Search, filtering, starring, archiving, compose, reply, and forward functionality
 - **Complete Role-Based Access Control**: Implemented comprehensive RBAC with Admin, HR, Accounts, Sales, and Technical roles
 - **Sales Management Suite**: Full MEDDPICC analysis and Sales Funnel tracking system
 - **HR & Expense Management**: Leave applications and convenience bill submission/approval workflows
@@ -12,18 +17,31 @@
 
 **Professional workspace application for Infosonik team collaboration and productivity management.**
 
-A modern, enterprise-grade web application built with React frontend and FastAPI backend, featuring professional branding, Google Workspace integration, secure authentication, and comprehensive productivity tools.
+A modern, enterprise-grade web application built with React frontend and FastAPI backend, featuring professional branding, Google Workspace integration, secure authentication, and comprehensive productivity tools including a **full-featured email interface**.
 
 ## 🌐 **Live Production Application**
 
 **🚀 Access the live application:** [https://infsnk-app-01.tawfiqulbari.work](https://infsnk-app-01.tawfiqulbari.work)
 
 - **Status:** ✅ Live and running in production
-- **Environment:** Production-ready deployment
+- **Environment:** Production-ready deployment with enhanced security
 - **Security:** Restricted to @infosonik.com Google Workspace accounts
 - **Server:** Ubuntu 20.04 LTS on dedicated infrastructure
+- **Email Interface:** 📧 **NEW!** Professional email management now available
 
 ## ✨ **Current Production Features** 
+
+### 📧 **NEW: Professional Email Interface** ⭐
+- **🎯 Outlook-like Experience**: Complete email management interface with modern UI/UX
+- **📁 Smart Folder Organization**: Inbox, Sent Items, Drafts, Starred, Archive, and Trash
+- **🔍 Advanced Search & Filtering**: Real-time search with filters for unread, starred, and attachments
+- **✍️ Full Compose Functionality**: Rich email composer with To/CC/BCC fields and attachment support
+- **⚡ Email Actions**: Reply, forward, star, archive, delete, and mark as read/unread
+- **📱 Mobile-Optimized**: Fully responsive design with touch-friendly interactions
+- **🎨 Modern UI Components**: Material-UI based design with smooth animations
+- **🔄 Real-time Synchronization**: Live Gmail integration with instant email operations
+- **📋 Email Preview**: Smart email preview with sender avatars and message snippets
+- **⭐ Smart Starring**: Quick star/unstar functionality with visual indicators
 
 ### 🏢 **Enterprise Branding & Design**
 - **🎨 Professional Infosonik Systems Limited Branding**: Custom logo, blue gradient theme, and corporate identity
@@ -32,12 +50,15 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 - **🌟 Glass-morphism UI**: Modern backdrop blur effects and gradient backgrounds
 - **📱 Fully Responsive**: Optimized for desktop, tablet, and mobile devices
 
-### 🔐 **Security & Authentication**
+### 🔐 **Enhanced Security & Authentication**
+- **🛡️ Environment Protection**: Production secrets secured from GitHub exposure
+- **🔒 Automated Security Verification**: Built-in security validation scripts
 - **🛡️ Domain-Restricted Access**: Limited to @infosonik.com Google Workspace accounts only
 - **🔑 Google OAuth Integration**: ✅ **FULLY IMPLEMENTED** - Seamless single sign-on with Google Workspace
 - **🔒 HTTPS Deployment**: Secure SSL/TLS encrypted connections via Traefik reverse proxy
 - **🎯 Authentication Flow**: Complete OAuth 2.0 implementation with proper redirect handling
 - **🌐 Production-Ready**: Live deployment with proper error handling and security
+- **🔐 Environment Backup Strategy**: Automated backup system for production configurations
 
 ### ✅ **OAuth Implementation Status**
 - **🔐 Google OAuth 2.0**: ✅ Successfully implemented and tested
@@ -51,749 +72,191 @@ A modern, enterprise-grade web application built with React frontend and FastAPI
 ### 💻 **Technical Features**
 
 #### **Core Functionality**
-- **📝 Advanced Note Management**: Create, edit, and organize notes with multi-language support (English/Bengali)
-- **📅 Calendar Integration**: Full Google Calendar sync with event creation, editing, and sharing
-- **🎤 Voice-to-Text**: Speech recognition functionality for hands-free note taking
-- **🌐 Multi-language Support**: Comprehensive English and Bengali language support
-- **📁 File Management**: Complete Google Drive integration with upload, download, and sharing
-- **🌙 Theme Support**: Professional light/dark mode with customizable themes
-- **💾 Data Management**: Comprehensive backup, restore, and export functionality
+- **📝 Rich Notes Management**: Multi-language syntax highlighting (Python, JavaScript, SQL, etc.)
+- **📅 Calendar Integration**: Google Calendar synchronization with event creation/editing
+- **📁 File Management**: Google Drive integration with upload/download capabilities
+- **👥 User Management**: RBAC system with role-based permissions
+- **📊 Dashboard Analytics**: Comprehensive stats and recent activity overview
+- **🔍 Search Capabilities**: Global search across notes, events, and emails
+- **⚙️ Settings Management**: User preferences and theme customization
+
+#### **📧 Email Management Suite** ⭐ **NEW**
+- **📥 Gmail Integration**: Full Gmail API integration with real-time synchronization
+- **📁 Folder Management**: Automatic folder detection and management
+- **🎯 Advanced Filtering**: Filter by read status, stars, attachments, and custom queries
+- **📊 Email Analytics**: Message counts and folder statistics
+- **🔄 Automatic Sync**: Real-time email updates and notifications
+- **📱 Mobile Email Experience**: Touch-optimized interface for mobile email management
+- **⚙️ Email Settings**: Customizable email display preferences
 
 #### **Enterprise Features**
-- **👥 Role-Based Access Control (RBAC)**: Granular permission system with 5 distinct roles:
-  - **🛡️ Admin**: Full system access, user management, and configuration
-  - **👤 HR**: Leave management, employee records, and approval workflows
-  - **💰 Accounts**: Expense management, bill approvals, and financial oversight
-  - **💼 Sales**: MEDDPICC analysis, sales funnel tracking, and opportunity management
-  - **🔧 Technical**: System maintenance, technical documentation, and infrastructure
+- **🏢 Role-Based Access Control (RBAC)**: Admin, HR, Accounts, Sales, Technical roles
+- **📈 Sales Pipeline Management**: MEDDPICC analysis framework implementation
+- **💰 Financial Tracking**: Revenue forecasting and deal progression monitoring
+- **📊 Reporting System**: Comprehensive analytics and report generation
+- **🔄 Workflow Automation**: Automated approval processes and notifications
+- **🎯 Performance Metrics**: KPI tracking and team performance analytics
 
 #### **Sales Management Suite**
-- **📊 MEDDPICC Analysis**: Complete sales methodology tracking with:
-  - Metrics, Economic Buyer, Decision Criteria, Decision Process
-  - Paper Process, Identify Pain, Champion, Competition analysis
-- **🏆 Sales Funnel Management**: Opportunity pipeline with stages, probabilities, and forecasting
-- **💡 Client Management**: Comprehensive client and opportunity tracking
+- **🎯 MEDDPICC Framework**: Complete sales qualification methodology
+- **📊 Sales Funnel Tracking**: Visual pipeline with stage progression
+- **💰 Revenue Forecasting**: Predictive analytics and trend analysis
+- **📈 Deal Management**: Comprehensive opportunity tracking
+- **🤝 Client Relationship Management**: Customer interaction history
 
 #### **HR & Administrative Tools**
-- **📋 Leave Management System**: 
-  - Employee leave application submission
-  - Multi-level approval workflows
-  - Leave balance tracking and reporting
+- **📋 Leave Management**: 
+  - Employee leave application system
+  - Manager approval workflow
+  - Leave balance tracking
+  - Calendar integration
 - **💳 Expense Management**: 
-  - Convenience bill submission with receipt upload
-  - Approval workflows with comments and tracking
-  - Weekly expense reporting and analytics
-- **📊 Admin Dashboard**: Real-time system statistics and user activity monitoring
-- **👥 User Management**: Role assignment, permission management, and user lifecycle
+  - Convenience bill submission
+  - Receipt upload functionality
+  - Multi-level approval process
+  - Expense reporting and analytics
+- **👥 Employee Directory**: Team member profiles and contact information
+- **📊 Administrative Reporting**: HR analytics and compliance tracking
 
 #### **Google Workspace Integration**
-- **📧 Gmail Integration**: 
-  - Read, send, and reply to emails directly within the platform
-  - Email threading and conversation management
-  - Attachment handling and inline media support
-- **💾 Google Drive**: 
-  - File browser with folder navigation
-  - Upload, download, and organize documents
-  - Advanced sharing with domain-wide permissions
-  - File preview and collaborative editing
+- **📧 Gmail**: 
+  - ✅ **COMPLETE EMAIL INTERFACE** - Professional Outlook-like experience
+  - ✅ Email reading, composing, and management
+  - ✅ Advanced search and filtering capabilities
+  - ✅ Mobile-responsive design
 - **📅 Google Calendar**: 
-  - Event creation, editing, and deletion
-  - Calendar sharing and public event management
-  - Meeting invitation and RSVP handling
+  - ✅ Event creation, editing, and management
+  - ✅ Calendar sharing and collaboration
+  - ✅ Meeting scheduling and reminders
+- **☁️ Google Drive**: 
+  - ✅ File upload and download
+  - ✅ Folder management and organization
+  - ✅ Document sharing and permissions
 
 #### **Technical Infrastructure**
-- **🐳 Containerization**: Full Docker deployment with multi-stage builds
-- **🗄️ Database**: PostgreSQL 15 with optimized schema and relationships
-- **🔐 Security**: JWT authentication, OAuth 2.0, and domain restrictions
-- **⚡ Performance**: Optimized queries, caching, and connection pooling
-- **🌐 Scalability**: Production-ready with horizontal scaling capabilities
+- **🐳 Containerized Deployment**: Docker-based production environment
+- **🔄 Reverse Proxy**: Traefik with automatic SSL certificate management
+- **🗄️ PostgreSQL Database**: Robust data storage with proper relationships
+- **🔐 JWT Authentication**: Secure token-based authentication system
+- **📱 Responsive Design**: Mobile-first approach with Material-UI components
+- **🔧 Environment Security**: Protected production configurations
 
 ## 📊 **Current Deployment Status**
 
 ### 🌐 **Production Environment Details**
-- **🚀 Deployment Date**: August 3, 2025 (Latest Update)
-- **⚡ Server Status**: ✅ Active and operational
-- **🔄 Container Status**: 3/3 containers running (webapp + database + traefik)
-- **🌐 HTTPS**: Fully configured with automatic SSL certificates
-- **🗄️ Database**: PostgreSQL 15 with persistent volume storage
-- **🔧 Restart Policy**: Configured for automatic container restart
-- **🔐 OAuth Integration**: ✅ Fully functional Google Workspace authentication
-- **🎯 OAuth Redirect**: `https://infsnk-app-01.tawfiqulbari.work/auth/callback`
+- **🌍 Domain**: https://infsnk-app-01.tawfiqulbari.work
+- **📊 Status**: ✅ Active and stable
+- **🔒 SSL**: ✅ Automatically managed by Traefik
+- **⚡ Performance**: Optimized for production workloads
+- **🛡️ Security**: Enhanced environment protection implemented
+- **📧 Email Service**: ✅ Professional email interface live
+- **🔄 Uptime**: 24/7 availability with health checks
+- **📱 Mobile Support**: ✅ Fully responsive across all devices
 
 ### 🏗️ **Infrastructure Specifications**
 - **🖥️ Server**: Ubuntu 20.04 LTS
-- **🐳 Docker**: Multi-stage containerized deployment
-- **🔗 Networking**: Isolated app network with service discovery
-- **💾 Storage**: Persistent PostgreSQL data volumes
-- **🛡️ Security**: HTTPS with Traefik reverse proxy, domain-restricted authentication
-- **📈 Scalability**: Ready for horizontal scaling and load balancing
-- **🌐 Domain**: `infsnk-app-01.tawfiqulbari.work` with automatic SSL certificate management
+- **🐳 Container Runtime**: Docker with Docker Compose
+- **🔄 Reverse Proxy**: Traefik v2.x with Let's Encrypt
+- **🗄️ Database**: PostgreSQL 15 with persistent volumes
+- **🔐 Security**: Production environment variable protection
+- **📊 Monitoring**: Health checks and automated restarts
+- **💾 Backup**: Automated database and configuration backups
 
 ### 🎨 **UI/UX Enhancements**
-- **✨ Professional Login Page**: Infosonik Systems Limited branded interface
-- **🖼️ Custom Logo Integration**: SVG logo with circuit pattern design
-- **🎨 Blue Gradient Theme**: Corporate blue color scheme throughout
-- **🔧 Service Badges**: IT Solutions, Cloud Services, and Security indicators
-- **📱 Responsive Design**: Optimized for all device sizes
-- **🌟 Glass Morphism**: Modern backdrop blur and transparency effects
+- **🎨 Infosonik Professional Theme**: Corporate blue (#2563eb) and purple (#7c3aed) palette
+- **🌟 Modern Components**: Glass-morphism effects and smooth animations
+- **📱 Mobile-First Design**: Touch-optimized interface for all screen sizes
+- **🌙 Theme Support**: Light and dark mode compatibility
+- **📧 Email Interface**: Professional Outlook-inspired design
+- **⚡ Performance**: Optimized loading and smooth interactions
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **React 18** - Modern React with hooks
-- **Axios** - HTTP client for API calls
-- **JavaScript ES6+** - Modern JavaScript features
+- **⚛️ React 18** with TypeScript support
+- **🎨 Material-UI (MUI)** for component library
+- **🎯 React Router** for navigation
+- **📊 Context API** for state management
+- **📧 Advanced Email Components** with mobile optimization
 
 ### Backend
-- **FastAPI** - High-performance Python web framework
-- **SQLAlchemy** - Python SQL toolkit and ORM
-- **PostgreSQL** - Robust relational database
-- **Pydantic** - Data validation using Python type hints
-- **Uvicorn** - ASGI server for FastAPI
-
-### Integrations
-- **Google Calendar API** - Calendar event management
-- **Google Speech Recognition** - Voice-to-text conversion
-- **Google OAuth 2.0** - Authentication and authorization
-
-### DevOps
-- **Docker** - Containerization platform
-- **Docker Compose** - Multi-container orchestration
-- **Multi-stage builds** - Optimized container images
-
-## 📁 Project Structure
-
-```
-Infosonik-App-01/
-├── src/                          # React frontend source code
-│   ├── components/               # React components
-│   │   ├── AdminPage.js         # System administration interface
-│   │   ├── BackupPage.js        # Data backup and restore
-│   │   ├── CalendarPage.js      # Enhanced calendar with dual view
-│   │   ├── ChatPage.js          # Team chat integration (Google Chat)
-│   │   ├── Dashboard.js         # Main dashboard and analytics
-│   │   ├── DrivePage.js         # Google Drive file management
-│   │   ├── EmailPage.js         # Gmail integration interface
-│   │   ├── ExpensePage.js       # Expense and bill management
-│   │   ├── FilesPage.js         # File upload and management
-│   │   ├── LeavePage.js         # Leave application system
-│   │   ├── LoginPage.js         # Professional login interface
-│   │   ├── Navbar.js            # Navigation bar component
-│   │   ├── NotesPage.js         # Note creation and management
-│   │   ├── SalesPage.js         # MEDDPICC and sales funnel
-│   │   └── SettingsPage.js      # User settings and preferences
-│   ├── contexts/                # React context providers
-│   │   ├── AuthContext.js       # Authentication state management
-│   │   └── ThemeContext.js      # Theme and UI state
-│   ├── styles/                  # Custom styling
-│   │   └── calendar.css         # Enhanced calendar styling
-│   ├── utils/                   # Utility functions
-│   │   └── api.js               # API client configuration
-│   ├── App.js                   # Main React application component
-│   └── index.js                 # React application entry point
-├── public/                      # Static assets and HTML template
-│   └── index.html              # HTML template with Infosonik branding
-├── migrations/                  # Database schema migrations
-│   └── 001_initial.sql         # Complete database schema
-├── main.py                     # FastAPI backend application
-├── requirements.txt            # Python dependencies
-├── package.json                # Node.js dependencies and scripts
-├── Dockerfile                  # Multi-stage container build
-├── docker-compose.yml          # Development environment
-├── docker-compose.prod.yml     # Production environment
-├── deploy.sh                   # Unix/Linux deployment script
-├── traefik.yml                 # Traefik reverse proxy configuration
-├── .gitignore                  # Git ignore file (includes .env files)
-├── SESSION_CONTEXT_2025-08-03.md # Development session documentation
-├── DEPLOYMENT.md               # Detailed deployment guide
-├── SETUP.md                    # Setup and configuration guide
-├── TRAEFIK-DEPLOYMENT.md       # Traefik-specific deployment
-└── README.md                   # Project documentation (this file)
-```
-
-### Key File Descriptions
-
-#### **Frontend Components**
-- **CalendarPage.js**: Enhanced dual-view calendar with month view, day view, clickable event cards, and Google Calendar integration
-- **AdminPage.js**: Role-based access control, user management, and system statistics
-- **SalesPage.js**: MEDDPICC analysis tools and sales funnel management
-- **ExpensePage.js**: Convenience bill submission and approval workflows
-- **LeavePage.js**: Employee leave application and management system
-- **LoginPage.js**: Professional Infosonik-branded authentication interface
-
-#### **Styling and Assets**
-- **calendar.css**: Custom styling for enhanced calendar interface with proper color themes
-- **index.html**: HTML template with Infosonik Systems Limited branding and meta tags
-
-#### **Backend and Infrastructure**
-- **main.py**: Comprehensive FastAPI application with all endpoints, authentication, and Google integrations
-- **001_initial.sql**: Complete PostgreSQL schema with all tables, relationships, and constraints
-- **docker-compose.prod.yml**: Production deployment configuration with Traefik, SSL, and persistent volumes
-
-#### **Documentation**
-- **SESSION_CONTEXT_2025-08-03.md**: Detailed development session notes and change tracking
-- **DEPLOYMENT.md**: Step-by-step production deployment instructions
-- **SETUP.md**: Local development setup and configuration guide
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Node.js** 18+ and npm
-- **Python** 3.11+
-- **Docker** and Docker Compose
-- **PostgreSQL** 15+ (for local development)
-
-### Local Development
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/TawfiqulBari/Infosonik-App-01.git
-   cd Infosonik-App-01
-   ```
-
-2. **Install frontend dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Install backend dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Set up environment variables**
-   ```bash
-   cp .env.prod .env
-   # Edit .env with your configuration
-   ```
-
-5. **Run with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
-
-6. **Access the application**
-   - Main App: http://localhost:8080
-   - API Docs: http://localhost:8080/docs
-
-## 🐳 Docker Deployment
-
-### Development Environment
-
-```bash
-docker-compose up -d
-```
-
-### Production Environment
-
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Automated Deployment Scripts
-
-#### Windows (PowerShell)
-```powershell
-.\deploy.ps1 -ServerIP your-server-ip -Username your-username
-```
-
-#### Unix/Linux
-```bash
-chmod +x deploy.sh
-./deploy.sh your-server-ip your-username
-```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Create a `.env` file with the following variables:
-
-```env
-# Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/notesapp
-DB_PASSWORD=your_secure_password
-
-# Google OAuth Configuration
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-
-# Optional Configuration
-ENVIRONMENT=production
-DEBUG=false
-```
-
-### Google OAuth Setup
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable Google Calendar API and Google OAuth2 API
-4. Create OAuth 2.0 credentials
-5. Add your domain to authorized origins
-6. Update `.env` with your credentials
-
-## 📚 API Documentation
-
-Once the application is running, visit:
-- **Swagger UI**: `http://your-domain/docs`
-- **ReDoc**: `http://your-domain/redoc`
-
-### Main Endpoints
-
-#### **Core Functionality**
-- `POST /notes/` - Create a new note
-- `GET /notes/` - List all notes
-- `POST /events/` - Create calendar event
-- `POST /voice-to-text/` - Convert speech to text
-
-#### **Sales Management** (Role-based access)
-- `POST /sales/meddpicc` - Create MEDDPICC analysis
-- `GET /sales/meddpicc` - List MEDDPICC records
-- `POST /sales/funnel` - Create sales funnel entry
-- `GET /sales/funnel` - List sales funnel records
-
-#### **Admin Management** (Admin only)
-- `GET /admin/users` - List all users
-- `GET /admin/stats` - Get system statistics
-- `POST /admin/roles` - Create new role
-- `GET /admin/roles` - List all roles
-- `PUT /admin/users/{user_id}/role` - Assign role to user
-
-#### **Leave Management**
-- `POST /leave/apply` - Submit leave application
-- `GET /leave/my-applications` - Get user's leave applications
-- `GET /leave/pending` - Get pending leave applications (Admin/HR)
-- `POST /leave/{application_id}/approve` - Approve/reject leave (Admin/HR)
-
-#### **Expense Management**
-- `POST /bills/submit` - Submit convenience bill
-- `GET /bills/my-bills` - Get user's submitted bills
-- `GET /bills/pending` - Get pending bills (Admin/Accounts)
-- `POST /bills/{bill_id}/approve` - Approve/reject bill (Admin/Accounts)
-
-#### **Google Integrations**
-- `GET /gmail/messages` - Get Gmail messages
-- `POST /gmail/send` - Send email
-- `GET /drive/files` - List Google Drive files
-- `POST /drive/files/{file_id}/share` - Share Drive file
-
-## 🗄️ Database Schema
-
-The application uses a comprehensive PostgreSQL database schema with the following key tables:
-
-### **Core Tables**
-
-#### **Users & Authentication**
-```sql
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    name VARCHAR(255),
-    google_id VARCHAR(255) UNIQUE,
-    profile_picture VARCHAR(255),
-    is_active BOOLEAN DEFAULT TRUE,
-    is_admin BOOLEAN DEFAULT FALSE,
-    role_id INTEGER REFERENCES roles (id),
-    preferences TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) UNIQUE NOT NULL,
-    description TEXT,
-    permissions TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### **Content Management**
-```sql
-CREATE TABLE notes (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER,
-    title VARCHAR(255),
-    content TEXT,
-    language VARCHAR(10),
-    theme VARCHAR(255) DEFAULT 'light',
-    attachments TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE events (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER,
-    title VARCHAR(255),
-    description TEXT,
-    start_time TIMESTAMP,
-    end_time TIMESTAMP,
-    google_event_id VARCHAR(255),
-    attachments TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### **Enterprise Features**
-
-#### **Sales Management**
-```sql
-CREATE TABLE meddpicc (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER,
-    client_name VARCHAR(255),
-    opportunity_name VARCHAR(255),
-    metrics TEXT,
-    economic_buyer TEXT,
-    decision_criteria TEXT,
-    decision_process TEXT,
-    paper_process TEXT,
-    identify_pain TEXT,
-    champion TEXT,
-    competition TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE sales_funnel (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER,
-    opportunity_name VARCHAR(255),
-    client_name VARCHAR(255),
-    stage VARCHAR(255),
-    probability INTEGER,
-    amount INTEGER,
-    closing_date TIMESTAMP,
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### **HR & Administrative**
-```sql
-CREATE TABLE leave_applications (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER,
-    leave_type VARCHAR(255),
-    start_date TIMESTAMP,
-    end_date TIMESTAMP,
-    days_requested INTEGER,
-    reason TEXT,
-    status VARCHAR(255) DEFAULT 'pending',
-    approved_by INTEGER,
-    approval_date TIMESTAMP,
-    approval_comments TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE convenience_bills (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER,
-    week_start_date TIMESTAMP,
-    week_end_date TIMESTAMP,
-    total_amount INTEGER,
-    description TEXT,
-    receipt_file_id INTEGER,
-    status VARCHAR(255) DEFAULT 'pending',
-    approved_by INTEGER,
-    approval_date TIMESTAMP,
-    approval_comments TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### **Supporting Tables**
-
-- **file_attachments**: File management and Google Drive integration
-- **user_sessions**: OAuth token management and session handling
-- **user_groups**: Team and department organization
-- **group_memberships**: User-to-group relationship management
-
-For the complete schema, see `migrations/001_initial.sql`.
-
-## 🚀 Production Deployment
-
-### Server Requirements
-
-- **OS**: Ubuntu 20.04+ or similar Linux distribution
-- **RAM**: 2GB minimum, 4GB recommended
-- **Storage**: 20GB minimum
-- **Network**: Port 80/443 open for web traffic
-
-### Deployment Steps
-
-1. **Clone repository on server**
-   ```bash
-   git clone https://github.com/TawfiqulBari/Infosonik-App-01.git
-   cd Infosonik-App-01
-   ```
-
-2. **Configure production environment**
-   ```bash
-   cp .env.prod .env
-   # Edit .env with production values
-   ```
-
-3. **Deploy with Docker**
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d --build
-   ```
-
-4. **Verify deployment**
-   ```bash
-   docker-compose -f docker-compose.prod.yml ps
-   curl http://localhost
-   ```
-
-### SSL/TLS Setup (Recommended)
-
-For production, set up SSL/TLS certificates:
-
-1. **Install Certbot**
-   ```bash
-   sudo apt install certbot python3-certbot-nginx
-   ```
-
-2. **Configure reverse proxy** (Nginx recommended)
-3. **Obtain SSL certificate**
-   ```bash
-   sudo certbot --nginx -d your-domain.com
-   ```
-
-## 🔧 Development
-
-### Adding New Features
-
-1. **Backend (FastAPI)**
-   - Add new endpoints in `main.py`
-   - Create new database models
-   - Update Pydantic schemas
-
-2. **Frontend (React)**
-   - Add new components in `src/`
-   - Update `App.js` for routing
-   - Install new dependencies with npm
-
-3. **Database**
-   - Create migration files in `migrations/`
-   - Update SQLAlchemy models
-
-### Running Tests
-
-```bash
-# Backend tests
-pytest
-
-# Frontend tests
-npm test
-
-# Integration tests
-docker-compose -f docker-compose.test.yml up --abort-on-container-exit
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **White screen on frontend**
-   - Check if static files are being served correctly
-   - Verify React build was successful
-   - Check browser console for JavaScript errors
-
-2. **Database connection errors**
-   - Verify PostgreSQL is running
-   - Check environment variables
-   - Ensure network connectivity between containers
-
-3. **Port conflicts**
-   - Change port mappings in docker-compose files
-   - Check which services are using ports 80/8080
-
-4. **Build failures**
-   - Clear Docker cache: `docker system prune -a`
-   - Check Dockerfile syntax
-   - Verify all dependencies are available
-
-### Logs and Debugging
-
-```bash
-# View application logs
-docker-compose logs -f app
-
-# View database logs
-docker-compose logs -f db
-
-# Access container shell
-docker exec -it infosonik-app-01-app-1 /bin/bash
-```
-
-## 📈 Performance Optimization
-
-### Production Optimizations
-
-1. **Enable gzip compression**
-2. **Use CDN for static assets**
-3. **Implement database connection pooling**
-4. **Add Redis for caching**
-5. **Set up load balancing**
-
-### Monitoring
-
-1. **Application monitoring** with tools like Prometheus
-2. **Log aggregation** with ELK stack
-3. **Database monitoring** with pgAdmin
-4. **Container monitoring** with cAdvisor
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes and commit: `git commit -am 'Add feature'`
-4. Push to the branch: `git push origin feature-name`
-5. Submit a pull request
-
-### Code Style
-
-- **Python**: Follow PEP 8 guidelines
-- **JavaScript**: Use ES6+ features and consistent formatting
-- **Documentation**: Update README and code comments
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Authors
-
-- **Tawfiqul Bari** - *Initial work* - [@TawfiqulBari](https://github.com/TawfiqulBari)
-
-## 🙏 Acknowledgments
-
-- **FastAPI** team for the excellent web framework
-- **React** team for the powerful frontend library
-- **Docker** for containerization technology
-- **Google** for Calendar and Speech APIs
-- **PostgreSQL** community for the robust database
-
-## 📞 Support
-
-For support and questions:
-
-- Create an issue on GitHub
-- Check the [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions
-- Review the API documentation at `/docs` endpoint
-
-## 🗺️ Roadmap
-
-### Upcoming Features
-
-- [ ] **Real-time Collaboration** - WebSocket integration for live editing
-- [ ] **Mobile App** - React Native version for iOS/Android
-- [ ] **Advanced Search** - Full-text search with Elasticsearch
-- [ ] **Notification System** - Real-time push notifications and email alerts
-- [ ] **Advanced Analytics** - Business intelligence dashboards and reporting
-- [ ] **Chat Integration** - Google Chat API integration for team communication
-- [ ] **Document Templates** - Pre-built templates for common business documents
-- [ ] **Workflow Automation** - Custom business process automation
-- [ ] **Multi-tenant Support** - Support for multiple organizations
-- [ ] **API Gateway** - Rate limiting and API management
-
-### Technical Improvements
-
-- [ ] **Test Coverage** - Comprehensive test suite
-- [ ] **CI/CD Pipeline** - Automated testing and deployment
-- [ ] **Kubernetes** - Container orchestration
-- [ ] **Microservices** - Service decomposition
-- [ ] **GraphQL** - Alternative API interface
-- [ ] **WebAssembly** - Performance optimization
+- **🚀 FastAPI** (Python) with async support
+- **🗄️ PostgreSQL** database with SQLAlchemy ORM
+- **🔐 OAuth 2.0** with Google Workspace integration
+- **📧 Gmail API** for email functionality
+- **☁️ Google APIs** (Drive, Calendar) integration
+- **🔒 JWT** token-based authentication
+
+### Infrastructure
+- **🐳 Docker** containerization
+- **🔄 Traefik** reverse proxy with SSL
+- **🌐 Let's Encrypt** automatic SSL certificates
+- **🛡️ Environment Security** with automated protection
+- **📊 Health Monitoring** and automatic recovery
+
+## 🔐 **Security Features**
+
+### **Environment Protection** 🛡️ **NEW**
+- **🔒 Production Secret Management**: `.env.prod` protected from GitHub exposure
+- **🔧 Automated Security Verification**: Built-in security validation scripts
+- **📋 Environment Backup Strategy**: Timestamped backup system
+- **🛡️ Git Protection**: Comprehensive `.gitignore` configuration
+- **📖 Security Documentation**: Complete production setup guide
+
+### **Authentication Security**
+- **🏢 Domain Restriction**: Google Workspace @infosonik.com only
+- **🔑 OAuth 2.0**: Secure Google authentication flow
+- **🔒 JWT Tokens**: Secure session management
+- **🛡️ API Security**: All endpoints protected with middleware
+
+## 🚀 **Recent Major Updates**
+
+### **📧 Email Interface (August 2025)** ⭐ **MAJOR FEATURE**
+- Complete professional email management interface
+- Outlook-inspired design with modern Material-UI components
+- Full mobile responsiveness with touch optimization
+- Advanced search, filtering, and email organization
+- Real-time Gmail API integration
+- Compose, reply, forward functionality
+- Smart folder management and email actions
+
+### **🔐 Security Enhancements (August 2025)**
+- Production environment protection framework
+- Automated security verification system
+- Enhanced `.gitignore` with comprehensive protection
+- Environment backup strategy implementation
+- Complete security documentation
+
+### **🎯 Previous Updates**
+- Role-Based Access Control implementation
+- Sales Management Suite with MEDDPICC
+- HR and Expense Management workflows
+- Enhanced Google Workspace integrations
+- Database optimization and relationships
+
+## 📋 **Getting Started**
+
+### **Production Deployment**
+1. **Environment Setup**: Use `PRODUCTION_SETUP.md` guide
+2. **Security Verification**: Run `./scripts/verify-env-security.sh`
+3. **Deployment**: `docker compose -f docker-compose.prod.yml up -d`
+4. **Access**: Navigate to your configured domain
+
+### **Development Setup**
+1. **Clone Repository**: `git clone [repository-url]`
+2. **Environment**: Copy `.env.example` to `.env`
+3. **Install Dependencies**: `npm install`
+4. **Start Development**: `docker compose up -d`
+
+## 📞 **Support & Contact**
+
+**Infosonik Systems Limited**
+- **🌐 Website**: [Company Website]
+- **📧 Email**: [Contact Email]
+- **🏢 Address**: [Company Address]
 
 ---
 
-**Happy Coding! 🚀**
-## Recent Changes\n\n- Integrated enhanced calendar functionality with month view and hourly day view side by side.\n- Clickable event cards displaying full details in modals.\n- Support for joining events, sharing, and inviting participants.\n- Environment files (.env, .env.prod) added to .gitignore for security purposes.
+**💼 Enterprise-Ready | 🔒 Secure | 📱 Mobile-Optimized | 📧 Full Email Suite**
 
-## 🎉 Latest Calendar Enhancements (August 2025)
-
-### Enhanced Calendar Interface
-- **Dual View Layout**: Month view and detailed day view side by side with optimal spacing
-- **Interactive Event Cards**: Clickable cards with professional styling and hover effects
-- **Day View Features**: 24-hour breakdown with hourly time slots showing scheduled events
-- **View Toggle**: Switch between month-focused and day-focused layout modes
-
-### Event Management Features
-- **Click for Details**: Event cards open comprehensive modal dialogs with full information
-- **Join Events**: Automatic detection and launching of meeting links (Google Meet, Zoom, Teams)
-- **Share Events**: Built-in sharing functionality for app-created events
-- **Invite Participants**: Send invitations to team members for events
-- **Copy Event Links**: Generate and copy shareable URLs for events
-
-### Google Calendar Integration
-- **Real-time Sync**: Pulls events from Google Calendar with proper authentication
-- **Visual Distinction**: Google Calendar events marked with special badges and styling
-- **Meeting Link Detection**: Automatically extracts and provides access to meeting links
-- **Dual Event Support**: Seamlessly handles both local and Google Calendar events
-
-### UI/UX Improvements
-- **Professional Styling**: Material-UI design with consistent theme and colors
-- **Fixed Calendar Colors**: Resolved visibility issues with proper contrast and theme support
-- **Responsive Design**: Optimized for all screen sizes and devices
-- **Enhanced Navigation**: Intuitive date selection and event browsing
-- **Loading States**: Professional loading indicators and error handling
-
-### Technical Enhancements
-- **OAuth Fixed**: Resolved authentication issues with proper environment variable handling
-- **Backend Endpoints**: Added `/events/{id}/invite` and improved sharing functionality
-- **Error Handling**: Comprehensive error management with user-friendly messages
-- **Performance**: Optimized event filtering and rendering for better performance
-
-### Security Updates
-- **Environment Protection**: Added .env and .env.prod to .gitignore for security
-- **Secure Deployment**: Production environment variables properly configured
-- **OAuth Security**: Proper token handling and refresh mechanisms
-
-
-## 🎉 Latest Enhancements - August 4, 2025
-
-### 🏢 **Enhanced Client & Expense Management**
-- **Client/Company Information Tracking**: Track client, contact number, expense purpose
-- **Billable Expenses**: Flag expenses that can be billed to clients  
-- **Project Reference**: Assign expenses to specific projects
-- **Admin Approval Workflows**: Multi-level approval for expenses
-- **User Role Management**: Fine-grained permission controls
-
-### 📊 **Advanced Reporting System**
-- **Comprehensive Reports**: Generate user and group-based reports
-- **Export Formats**: PDF, Excel, CSV, and share via email/drive
-- **Scheduled Reports**: Automate report generation
-
-### 🗄️ **Database Enhancements**
-- **Enhanced Schema**: Added client tracking and RBAC tables
-- **Migration Scripts**: Automated database updates
-- **Performance Optimizations**: Improved indexing and queries
-
-### 🔐 **Role-Based Access Control (RBAC)**
-- **Granular Permissions**: Module-based access control
-- **Admin Dashboard**: Complete expense approval workflow
-- **User Groups**: Team-based permission management
-- **Audit Trail**: Track all administrative actions
-
-### 🌐 **Deployment & Infrastructure**
-- **Environment Security**: .env files properly excluded from git
-- **Production Ready**: Enhanced Docker configuration
-- **Database Migrations**: Automated schema updates
-- **CI/CD Ready**: Streamlined deployment process
-
-🐛 **Bug Fixes**:
-- Fixed OAuth token refresh issues
-- Resolved UI build errors
-- Fixed currency display consistency
-
-🔧 **Technical Improvements**:
-- Enhanced PostgreSQL schema with proper relationships
-- Improved API endpoints with comprehensive validation
-- Updated frontend components with Material-UI enhancements
+*Built with ❤️ for Infosonik Systems Limited team productivity and collaboration.*

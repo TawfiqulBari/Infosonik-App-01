@@ -1,60 +1,931 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Typography, Box, CircularProgress, List, ListItem, ListItemText, Button } from '@mui/material';
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemButton,
+  IconButton,
+  TextField,
+  InputAdornment,
+  Chip,
+  Avatar,
+  Divider,
+  Button,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Drawer,
+  Toolbar,
+  Badge,
+  Fab,
+  CircularProgress,
+  Tooltip,
+  FormControl,
+  Select,
+  Alert,
+  Snackbar,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import {
+  Inbox as InboxIcon,
+  Send as SendIcon,
+  Drafts as DraftsIcon,
+  Delete as DeleteIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
+  Search as SearchIcon,
+  Refresh as RefreshIcon,
+  MoreVert as MoreVertIcon,
+  Reply as ReplyIcon,
+  Forward as ForwardIcon,
+  Archive as ArchiveIcon,
+  Label as LabelIcon,
+  Attachment as AttachmentIcon,
+  Edit as EditIcon,
+  Close as CloseIcon,
+  Email as EmailIcon,
+  MailOutline as MailOutlineIcon,
+  Menu as MenuIcon,
+} from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
+import { format, isToday, isYesterday, parseISO } from 'date-fns';
+
+const DRAWER_WIDTH = 280;
 
 export default function EmailPage() {
-  const { token } = useAuth();
+  const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // State management
+  const [selectedFolder, setSelectedFolder] = useState('inbox');
+  const [folders, setFolders] = useState([]);
   const [emails, setEmails] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedEmail, setSelectedEmail] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [sortBy, setSortBy] = useState('timestamp');
+  const [filterBy, setFilterBy] = useState('all');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Compose email state
+  const [composeData, setComposeData] = useState({
+    to: '',
+    cc: '',
+    bcc: '',
+    subject: '',
+    body: '',
+    attachments: []
+  });
+
+  // Load folders and emails on mount
   useEffect(() => {
-    fetchEmails();
-  }, []);
+    loadFolders();
+    loadEmails();
+  }, [selectedFolder]);
 
-  const fetchEmails = async () => {
+  const loadFolders = async () => {
+    try {
+      const response = await api.get('/gmail/folders');
+      setFolders(response.data);
+    } catch (error) {
+      console.error('Failed to load folders:', error);
+      // Use default folders if API fails
+      setFolders([
+        { id: 'inbox', name: 'Inbox', icon: 'inbox', count: 0, color: '#1976d2' },
+        { id: 'sent', name: 'Sent Items', icon: 'send', count: 0, color: '#388e3c' },
+        { id: 'drafts', name: 'Drafts', icon: 'drafts', count: 0, color: '#f57c00' },
+        { id: 'starred', name: 'Starred', icon: 'star', count: 0, color: '#fbc02d' },
+        { id: 'trash', name: 'Deleted Items', icon: 'delete', count: 0, color: '#d32f2f' },
+      ]);
+    }
+  };
+
+  const loadEmails = async () => {
     setLoading(true);
     try {
       const response = await api.get('/gmail/messages', {
-        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          folder: selectedFolder,
+          maxResults: 50
+        }
       });
-      setEmails(response.data);
+      
+      // Transform the data to match our component structure
+      const transformedEmails = response.data.map(email => ({
+        id: email.id,
+        from: {
+          name: email.from.split('<')[0].trim() || email.from,
+          email: email.from.match(/<(.+)>/)?.[1] || email.from
+        },
+        to: [{ email: email.to }],
+        subject: email.subject,
+        preview: email.snippet || '',
+        body: email.body || email.snippet || '',
+        timestamp: email.date ? parseISO(email.date) : new Date(),
+        isRead: !email.labels?.includes('UNREAD'),
+        isStarred: email.labels?.includes('STARRED'),
+        hasAttachments: email.has_attachments || false,
+        folder: selectedFolder,
+        labels: email.labels || []
+      }));
+      
+      setEmails(transformedEmails);
+      setError(null);
     } catch (error) {
-      console.error('Error fetching emails:', error);
+      console.error('Failed to load emails:', error);
+      setError('Failed to load emails. Please try again.');
       toast.error('Failed to load emails');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <Container>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+  const filteredEmails = useMemo(() => {
+    let filtered = emails.filter(email => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          email.subject.toLowerCase().includes(query) ||
+          email.from.name.toLowerCase().includes(query) ||
+          email.from.email.toLowerCase().includes(query) ||
+          email.preview.toLowerCase().includes(query)
+        );
+      }
+      
+      // Additional filters
+      if (filterBy === 'unread' && email.isRead) return false;
+      if (filterBy === 'starred' && !email.isStarred) return false;
+      if (filterBy === 'attachments' && !email.hasAttachments) return false;
+      
+      return true;
+    });
+
+    // Sort emails
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'timestamp':
+          return new Date(b.timestamp) - new Date(a.timestamp);
+        case 'sender':
+          return a.from.name.localeCompare(b.from.name);
+        case 'subject':
+          return a.subject.localeCompare(b.subject);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [emails, searchQuery, sortBy, filterBy]);
+
+  const formatEmailDate = (date) => {
+    try {
+      if (isToday(date)) {
+        return format(date, 'h:mm a');
+      } else if (isYesterday(date)) {
+        return 'Yesterday';
+      } else {
+        return format(date, 'MMM dd');
+      }
+    } catch (error) {
+      return 'Unknown';
+    }
+  };
+
+  const handleEmailClick = async (email) => {
+    setSelectedEmail(email);
+    if (!email.isRead) {
+      await markAsRead(email.id);
+    }
+  };
+
+  const markAsRead = async (emailId) => {
+    try {
+      await api.post(`/gmail/messages/${emailId}/mark-read`);
+      setEmails(prev => prev.map(email => 
+        email.id === emailId ? { ...email, isRead: true } : email
+      ));
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
+    }
+  };
+
+  const toggleStar = async (emailId) => {
+    try {
+      const response = await api.put(`/gmail/messages/${emailId}/star`);
+      setEmails(prev => prev.map(email => 
+        email.id === emailId ? { ...email, isStarred: response.data.starred } : email
+      ));
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error('Failed to toggle star:', error);
+      toast.error('Failed to update star');
+    }
+  };
+
+  const deleteEmail = async (emailId) => {
+    try {
+      await api.delete(`/gmail/messages/${emailId}`);
+      setEmails(prev => prev.filter(email => email.id !== emailId));
+      if (selectedEmail?.id === emailId) {
+        setSelectedEmail(null);
+      }
+      toast.success('Email moved to trash');
+    } catch (error) {
+      console.error('Failed to delete email:', error);
+      toast.error('Failed to delete email');
+    }
+  };
+
+  const archiveEmail = async (emailId) => {
+    try {
+      await api.put(`/gmail/messages/${emailId}/archive`);
+      setEmails(prev => prev.filter(email => email.id !== emailId));
+      if (selectedEmail?.id === emailId) {
+        setSelectedEmail(null);
+      }
+      toast.success('Email archived');
+    } catch (error) {
+      console.error('Failed to archive email:', error);
+      toast.error('Failed to archive email');
+    }
+  };
+
+  const handleCompose = () => {
+    setComposeOpen(true);
+    setComposeData({
+      to: '',
+      cc: '',
+      bcc: '',
+      subject: '',
+      body: '',
+      attachments: []
+    });
+  };
+
+  const handleReply = (email) => {
+    setComposeData({
+      to: email.from.email,
+      cc: '',
+      bcc: '',
+      subject: `Re: ${email.subject}`,
+      body: `\n\n--- Original Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
+      attachments: []
+    });
+    setComposeOpen(true);
+  };
+
+  const handleForward = (email) => {
+    setComposeData({
+      to: '',
+      cc: '',
+      bcc: '',
+      subject: `Fwd: ${email.subject}`,
+      body: `\n\n--- Forwarded Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
+      attachments: []
+    });
+    setComposeOpen(true);
+  };
+
+  const sendEmail = async () => {
+    try {
+      setLoading(true);
+      await api.post('/gmail/send', composeData);
+      toast.success('Email sent successfully');
+      setComposeOpen(false);
+      setComposeData({
+        to: '',
+        cc: '',
+        bcc: '',
+        subject: '',
+        body: '',
+        attachments: []
+      });
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      toast.error('Failed to send email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchEmails = async () => {
+    if (!searchQuery.trim()) {
+      loadEmails();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.get('/gmail/search', {
+        params: { query: searchQuery }
+      });
+      
+      const transformedEmails = response.data.map(email => ({
+        id: email.id,
+        from: {
+          name: email.from.split('<')[0].trim() || email.from,
+          email: email.from.match(/<(.+)>/)?.[1] || email.from
+        },
+        to: [{ email: email.to }],
+        subject: email.subject,
+        preview: email.snippet || '',
+        body: email.snippet || '',
+        timestamp: email.date ? parseISO(email.date) : new Date(),
+        isRead: !email.labels?.includes('UNREAD'),
+        isStarred: email.labels?.includes('STARRED'),
+        hasAttachments: false,
+        folder: 'search',
+        labels: email.labels || []
+      }));
+      
+      setEmails(transformedEmails);
+    } catch (error) {
+      console.error('Search failed:', error);
+      toast.error('Search failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getIconComponent = (iconName) => {
+    const icons = {
+      inbox: InboxIcon,
+      send: SendIcon,
+      drafts: DraftsIcon,
+      star: StarIcon,
+      delete: DeleteIcon,
+    };
+    return icons[iconName] || EmailIcon;
+  };
+
+  const FolderList = () => (
+    <List>
+      {folders.map((folder) => {
+        const IconComponent = getIconComponent(folder.icon);
+        const isSelected = selectedFolder === folder.id;
+        
+        return (
+          <ListItem key={folder.id} disablePadding>
+            <ListItemButton
+              selected={isSelected}
+              onClick={() => {
+                setSelectedFolder(folder.id);
+                if (isMobile) {
+                  setMobileOpen(false);
+                }
+              }}
+              sx={{
+                borderRadius: 1,
+                mx: 1,
+                mb: 0.5,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: isSelected ? 'white' : folder.color }}>
+                <IconComponent />
+              </ListItemIcon>
+              <ListItemText 
+                primary={folder.name} 
+                sx={{ color: isSelected ? 'white' : 'inherit' }}
+              />
+              {folder.count > 0 && (
+                <Badge 
+                  badgeContent={folder.count} 
+                  color={isSelected ? "secondary" : "primary"}
+                />
+              )}
+            </ListItemButton>
+          </ListItem>
+        );
+      })}
+    </List>
+  );
+
+  const EmailList = () => (
+    <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Mobile Header */}
+      {isMobile && (
+        <Box sx={{ p: 2, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+          <IconButton onClick={() => setMobileOpen(true)} sx={{ mr: 1 }}>
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            {folders.find(f => f.id === selectedFolder)?.name || 'Inbox'}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Search and Actions Bar */}
+      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Search emails..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && searchEmails()}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <IconButton onClick={() => loadEmails()}>
+            <RefreshIcon />
+          </IconButton>
+        </Box>
+        
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <Select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value)}
+              displayEmpty
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="unread">Unread</MenuItem>
+              <MenuItem value="starred">Starred</MenuItem>
+              <MenuItem value="attachments">With Attachments</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <Select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <MenuItem value="timestamp">Date</MenuItem>
+              <MenuItem value="sender">Sender</MenuItem>
+              <MenuItem value="subject">Subject</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Box>
+
+      {/* Loading Indicator */}
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
           <CircularProgress />
         </Box>
-      </Container>
-    );
-  }
+      )}
 
-  return (
-    <Container maxWidth="md">
-      <Typography variant="h4" gutterBottom>
-        Your Emails
-      </Typography>
-      <List>
-        {emails.map((email) => (
-          <ListItem key={email.id} divider>
-            <ListItemText
-              primary={`Subject: ${email.subject}`}
-              secondary={`From: ${email.sender} | Received: ${new Date(email.timestamp).toLocaleString()}`}
-            />
-            <Button variant="contained">View</Button>
+      {/* Error Message */}
+      {error && (
+        <Alert severity="error" sx={{ m: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Email List */}
+      <List sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
+        {filteredEmails.map((email) => (
+          <ListItem
+            key={email.id}
+            disablePadding
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              '&:hover': { backgroundColor: 'action.hover' }
+            }}
+          >
+            <ListItemButton
+              selected={selectedEmail?.id === email.id}
+              onClick={() => handleEmailClick(email)}
+              sx={{
+                px: 2,
+                py: 1.5,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 1
+              }}
+            >
+              <Avatar sx={{ width: 32, height: 32, mt: 0.5 }}>
+                {email.from.name.charAt(0).toUpperCase()}
+              </Avatar>
+              
+              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontWeight: email.isRead ? 400 : 600,
+                      flexGrow: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {email.from.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatEmailDate(email.timestamp)}
+                  </Typography>
+                </Box>
+                
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: email.isRead ? 400 : 600,
+                    mb: 0.5,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {email.subject || '(No Subject)'}
+                </Typography>
+                
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    display: 'block'
+                  }}
+                >
+                  {email.preview}
+                </Typography>
+                
+                {email.hasAttachments && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                    <AttachmentIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  </Box>
+                )}
+              </Box>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleStar(email.id);
+                  }}
+                  sx={{ p: 0.5 }}
+                >
+                  {email.isStarred ? (
+                    <StarIcon sx={{ color: 'warning.main', fontSize: 16 }} />
+                  ) : (
+                    <StarBorderIcon sx={{ fontSize: 16 }} />
+                  )}
+                </IconButton>
+                
+                {!email.isRead && (
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: 'primary.main'
+                    }}
+                  />
+                )}
+              </Box>
+            </ListItemButton>
           </ListItem>
         ))}
+        
+        {filteredEmails.length === 0 && !loading && (
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <MailOutlineIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" color="text.secondary">
+              No emails found
+            </Typography>
+          </Box>
+        )}
       </List>
-    </Container>
+    </Paper>
+  );
+
+  const EmailViewer = () => {
+    if (!selectedEmail) {
+      return (
+        <Paper sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <EmailIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" color="text.secondary">
+              Select an email to view
+            </Typography>
+          </Box>
+        </Paper>
+      );
+    }
+
+    return (
+      <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {/* Email Header */}
+        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'between', alignItems: 'flex-start', mb: 2 }}>
+            <Box sx={{ flexGrow: 1 }}>
+              <Typography variant="h6" gutterBottom>
+                {selectedEmail.subject || '(No Subject)'}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <Avatar sx={{ width: 40, height: 40 }}>
+                  {selectedEmail.from.name.charAt(0).toUpperCase()}
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {selectedEmail.from.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {selectedEmail.from.email}
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                To: {selectedEmail.to.map(t => t.email).join(', ')}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {format(selectedEmail.timestamp, 'PPpp')}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Tooltip title="Reply">
+                <IconButton onClick={() => handleReply(selectedEmail)}>
+                  <ReplyIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Forward">
+                <IconButton onClick={() => handleForward(selectedEmail)}>
+                  <ForwardIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Star">
+                <IconButton onClick={() => toggleStar(selectedEmail.id)}>
+                  {selectedEmail.isStarred ? <StarIcon color="warning" /> : <StarBorderIcon />}
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Archive">
+                <IconButton onClick={() => archiveEmail(selectedEmail.id)}>
+                  <ArchiveIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete">
+                <IconButton onClick={() => deleteEmail(selectedEmail.id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+              <IconButton onClick={(e) => setMenuAnchorEl(e.currentTarget)}>
+                <MoreVertIcon />
+              </IconButton>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Email Content */}
+        <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto' }}>
+          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+            {selectedEmail.body}
+          </Typography>
+        </Box>
+      </Paper>
+    );
+  };
+
+  const ComposeDialog = () => (
+    <Dialog 
+      open={composeOpen} 
+      onClose={() => setComposeOpen(false)}
+      maxWidth="md"
+      fullWidth
+      fullScreen={isMobile}
+      PaperProps={{
+        sx: { height: isMobile ? '100vh' : '80vh', display: 'flex', flexDirection: 'column' }
+      }}
+    >
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h6">Compose Email</Typography>
+        <IconButton onClick={() => setComposeOpen(false)}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      
+      <DialogContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <TextField
+          fullWidth
+          label="To"
+          value={composeData.to}
+          onChange={(e) => setComposeData(prev => ({ ...prev, to: e.target.value }))}
+        />
+        
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <TextField
+            label="CC"
+            value={composeData.cc}
+            onChange={(e) => setComposeData(prev => ({ ...prev, cc: e.target.value }))}
+            sx={{ flexGrow: 1 }}
+          />
+          <TextField
+            label="BCC"
+            value={composeData.bcc}
+            onChange={(e) => setComposeData(prev => ({ ...prev, bcc: e.target.value }))}
+            sx={{ flexGrow: 1 }}
+          />
+        </Box>
+        
+        <TextField
+          fullWidth
+          label="Subject"
+          value={composeData.subject}
+          onChange={(e) => setComposeData(prev => ({ ...prev, subject: e.target.value }))}
+        />
+        
+        <TextField
+          fullWidth
+          multiline
+          rows={isMobile ? 8 : 12}
+          label="Message"
+          value={composeData.body}
+          onChange={(e) => setComposeData(prev => ({ ...prev, body: e.target.value }))}
+          sx={{ flexGrow: 1 }}
+        />
+      </DialogContent>
+      
+      <DialogActions sx={{ p: 3, gap: 1 }}>
+        <Button startIcon={<AttachmentIcon />} variant="outlined">
+          Attach Files
+        </Button>
+        <Box sx={{ flexGrow: 1 }} />
+        <Button onClick={() => setComposeOpen(false)}>
+          Cancel
+        </Button>
+        <Button 
+          variant="contained" 
+          onClick={sendEmail}
+          disabled={loading || !composeData.to || !composeData.subject}
+          startIcon={loading ? <CircularProgress size={16} /> : <SendIcon />}
+        >
+          Send
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const drawer = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Toolbar>
+        <Typography variant="h6" noWrap component="div">
+          📧 Email
+        </Typography>
+      </Toolbar>
+      
+      <Box sx={{ p: 2 }}>
+        <Button
+          variant="contained"
+          fullWidth
+          startIcon={<EditIcon />}
+          onClick={handleCompose}
+          sx={{ mb: 2 }}
+        >
+          Compose
+        </Button>
+      </Box>
+      
+      <Divider />
+      
+      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+        <FolderList />
+      </Box>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ display: 'flex', height: 'calc(100vh - 120px)' }}>
+      {/* Desktop Drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          width: DRAWER_WIDTH,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: DRAWER_WIDTH,
+            boxSizing: 'border-box',
+            position: 'relative',
+            height: '100%',
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            width: DRAWER_WIDTH,
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, display: 'flex', gap: 2, p: { xs: 1, md: 2 } }}>
+        {/* Email List */}
+        <Box sx={{ 
+          width: { xs: '100%', lg: '40%' },
+          display: { xs: selectedEmail && !isMobile ? 'none' : 'block', lg: 'block' }
+        }}>
+          <EmailList />
+        </Box>
+
+        {/* Email Viewer */}
+        <Box sx={{ 
+          width: { xs: '100%', lg: '60%' },
+          display: { xs: selectedEmail ? 'block' : 'none', lg: 'block' }
+        }}>
+          <EmailViewer />
+        </Box>
+      </Box>
+
+      {/* Floating Action Button for Mobile */}
+      <Fab
+        color="primary"
+        aria-label="compose"
+        onClick={handleCompose}
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          display: { xs: 'flex', md: 'none' }
+        }}
+      >
+        <EditIcon />
+      </Fab>
+
+      {/* Compose Dialog */}
+      <ComposeDialog />
+
+      {/* Context Menu */}
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={() => setMenuAnchorEl(null)}
+      >
+        <MenuItem onClick={() => {
+          markAsRead(selectedEmail?.id);
+          setMenuAnchorEl(null);
+        }}>
+          <ListItemIcon>
+            <MailOutlineIcon fontSize="small" />
+          </ListItemIcon>
+          Mark as unread
+        </MenuItem>
+        <MenuItem onClick={() => {
+          archiveEmail(selectedEmail?.id);
+          setMenuAnchorEl(null);
+        }}>
+          <ListItemIcon>
+            <ArchiveIcon fontSize="small" />
+          </ListItemIcon>
+          Archive
+        </MenuItem>
+        <MenuItem onClick={() => {
+          setMenuAnchorEl(null);
+        }}>
+          <ListItemIcon>
+            <LabelIcon fontSize="small" />
+          </ListItemIcon>
+          Add label
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }
-
