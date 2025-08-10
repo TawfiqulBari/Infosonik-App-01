@@ -31,7 +31,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod down
 
 # Build and start containers with production configuration
 echo "🏗️  Building and starting containers..."
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+export $(grep -v '^#' .env.prod | xargs) && docker compose -f docker-compose.prod.yml up -d --build
 
 # Wait a moment for containers to start
 echo "⏳ Waiting for containers to start..."

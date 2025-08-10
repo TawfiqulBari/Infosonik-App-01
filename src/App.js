@@ -14,14 +14,14 @@ import NotesPage from './components/NotesPage';
 import CalendarPage from './components/CalendarPage';
 import FilesPage from './components/FilesPage';
 import SettingsPage from './components/SettingsPage';
-import BackupPage from './components/BackupPage';
 import DrivePage from './components/DrivePage';
-import ChatPage from './components/ChatPage';
-import AdminPage from './components/AdminPage';
 import EmailPage from './components/EmailPage';
 import SalesPage from './components/SalesPage';
 import LeavePage from './components/LeavePage';
 import ExpensePage from './components/ExpensePage';
+import ChatPage from './components/ChatPage';
+import BackupPage from './components/BackupPage';
+import AdminPage from './components/AdminPage';
 
 function AppContent() {
   const { user, loading } = useAuth();

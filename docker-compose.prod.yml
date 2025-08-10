@@ -1,23 +1,20 @@
 version: '3.8'
 
 services:
-  traefik:
-    image: traefik:v3.0
-    container_name: traefik-prod
-    command:
-      - "--configfile=/etc/traefik/traefik.yml"
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik.yml:/etc/traefik/traefik.yml
-      - letsencrypt:/letsencrypt
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
     networks:
       - app-network
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
 
   db:
     image: postgres:15
@@ -33,17 +30,16 @@ services:
 
   app:
     build: .
-    environment:
-      DATABASE_URL: postgresql://user:${DB_PASSWORD:-securepassword123}@db:5432/webapp_db
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
-      SECRET_KEY: ${SECRET_KEY}
-      ENVIRONMENT: ${ENVIRONMENT:-production}
-      DEBUG: ${DEBUG:-false}
+    env_file:
+      - .env.prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     depends_on:
       - db
-      - traefik
     networks:
       - app-network
     restart: unless-stopped
