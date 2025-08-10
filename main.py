@@ -3308,3 +3308,195 @@ async def delete_client(
     
     return {"message": "Client deleted successfully"}
 
+
+# Enhanced Gmail API endpoints for Outlook-like functionality
+
+@app.get("/gmail/folders")
+async def get_gmail_folders(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get Gmail folders/labels"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = get_gmail_service(credentials)
+        
+        # Get standard labels
+        labels_result = service.users().labels().list(userId='me').execute()
+        labels = labels_result.get('labels', [])
+        
+        # Format for frontend
+        folders = []
+        standard_labels = {
+            'INBOX': {'name': 'Inbox', 'icon': 'inbox', 'color': '#1976d2'},
+            'SENT': {'name': 'Sent Items', 'icon': 'send', 'color': '#388e3c'},
+            'DRAFT': {'name': 'Drafts', 'icon': 'drafts', 'color': '#f57c00'},
+            'STARRED': {'name': 'Starred', 'icon': 'star', 'color': '#fbc02d'},
+            'TRASH': {'name': 'Deleted Items', 'icon': 'delete', 'color': '#d32f2f'},
+        }
+        
+        for label in labels:
+            if label['id'] in standard_labels:
+                folder_info = standard_labels[label['id']]
+                folders.append({
+                    'id': label['id'].lower(),
+                    'name': folder_info['name'],
+                    'icon': folder_info['icon'],
+                    'color': folder_info['color'],
+                    'count': label.get('messagesUnread', 0)
+                })
+        
+        return folders
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch folders: {str(e)}")
+
+@app.put("/gmail/messages/{message_id}/star")
+async def toggle_star_gmail_message(
+    message_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Toggle star status of a Gmail message"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = get_gmail_service(credentials)
+        
+        # Get current message to check if it's starred
+        message = service.users().messages().get(
+            userId='me', 
+            id=message_id,
+            format='metadata'
+        ).execute()
+        
+        labels = message.get('labelIds', [])
+        is_starred = 'STARRED' in labels
+        
+        # Toggle star
+        if is_starred:
+            service.users().messages().modify(
+                userId='me',
+                id=message_id,
+                body={'removeLabelIds': ['STARRED']}
+            ).execute()
+            return {"starred": False, "message": "Star removed"}
+        else:
+            service.users().messages().modify(
+                userId='me',
+                id=message_id,
+                body={'addLabelIds': ['STARRED']}
+            ).execute()
+            return {"starred": True, "message": "Star added"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to toggle star: {str(e)}")
+
+@app.put("/gmail/messages/{message_id}/archive")
+async def archive_gmail_message(
+    message_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Archive a Gmail message"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = get_gmail_service(credentials)
+        
+        service.users().messages().modify(
+            userId='me',
+            id=message_id,
+            body={'removeLabelIds': ['INBOX']}
+        ).execute()
+        
+        return {"message": "Email archived successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to archive email: {str(e)}")
+
+@app.delete("/gmail/messages/{message_id}")
+async def delete_gmail_message(
+    message_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Move Gmail message to trash"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = get_gmail_service(credentials)
+        
+        service.users().messages().trash(
+            userId='me',
+            id=message_id
+        ).execute()
+        
+        return {"message": "Email moved to trash"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete email: {str(e)}")
+
+@app.get("/gmail/search")
+async def search_gmail_messages(
+    query: str,
+    max_results: int = 50,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Search Gmail messages"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = get_gmail_service(credentials)
+        
+        results = service.users().messages().list(
+            userId='me',
+            q=query,
+            maxResults=max_results
+        ).execute()
+        
+        messages = results.get('messages', [])
+        formatted_messages = []
+        
+        for msg in messages:
+            message = service.users().messages().get(
+                userId='me',
+                id=msg['id'],
+                format='metadata'
+            ).execute()
+            
+            headers = {h['name']: h['value'] for h in message['payload'].get('headers', [])}
+            
+            formatted_messages.append({
+                'id': message['id'],
+                'threadId': message['threadId'],
+                'from': headers.get('From', ''),
+                'to': headers.get('To', ''),
+                'subject': headers.get('Subject', ''),
+                'date': headers.get('Date', ''),
+                'labels': message.get('labelIds', []),
+                'snippet': message.get('snippet', '')
+            })
+        
+        return formatted_messages
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to search emails: {str(e)}")
+

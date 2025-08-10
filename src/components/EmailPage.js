@@ -31,7 +31,6 @@ import {
   FormControl,
   Select,
   Alert,
-  Snackbar,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -59,7 +58,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
-import { format, isToday, isYesterday, parseISO } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 
 const DRAWER_WIDTH = 280;
 
@@ -70,7 +69,13 @@ export default function EmailPage() {
   
   // State management
   const [selectedFolder, setSelectedFolder] = useState('inbox');
-  const [folders, setFolders] = useState([]);
+  const [folders, setFolders] = useState([
+    { id: 'inbox', name: 'Inbox', icon: 'inbox', count: 0, color: '#1976d2' },
+    { id: 'sent', name: 'Sent Items', icon: 'send', count: 0, color: '#388e3c' },
+    { id: 'drafts', name: 'Drafts', icon: 'drafts', count: 0, color: '#f57c00' },
+    { id: 'starred', name: 'Starred', icon: 'star', count: 0, color: '#fbc02d' },
+    { id: 'trash', name: 'Deleted Items', icon: 'delete', count: 0, color: '#d32f2f' },
+  ]);
   const [emails, setEmails] = useState([]);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -104,14 +109,7 @@ export default function EmailPage() {
       setFolders(response.data);
     } catch (error) {
       console.error('Failed to load folders:', error);
-      // Use default folders if API fails
-      setFolders([
-        { id: 'inbox', name: 'Inbox', icon: 'inbox', count: 0, color: '#1976d2' },
-        { id: 'sent', name: 'Sent Items', icon: 'send', count: 0, color: '#388e3c' },
-        { id: 'drafts', name: 'Drafts', icon: 'drafts', count: 0, color: '#f57c00' },
-        { id: 'starred', name: 'Starred', icon: 'star', count: 0, color: '#fbc02d' },
-        { id: 'trash', name: 'Deleted Items', icon: 'delete', count: 0, color: '#d32f2f' },
-      ]);
+      // Keep default folders if API fails
     }
   };
 
@@ -120,29 +118,35 @@ export default function EmailPage() {
     try {
       const response = await api.get('/gmail/messages', {
         params: {
-          folder: selectedFolder,
-          maxResults: 50
+          max_results: 50
         }
       });
       
-      // Transform the data to match our component structure
-      const transformedEmails = response.data.map(email => ({
-        id: email.id,
-        from: {
-          name: email.from.split('<')[0].trim() || email.from,
-          email: email.from.match(/<(.+)>/)?.[1] || email.from
-        },
-        to: [{ email: email.to }],
-        subject: email.subject,
-        preview: email.snippet || '',
-        body: email.body || email.snippet || '',
-        timestamp: email.date ? parseISO(email.date) : new Date(),
-        isRead: !email.labels?.includes('UNREAD'),
-        isStarred: email.labels?.includes('STARRED'),
-        hasAttachments: email.has_attachments || false,
-        folder: selectedFolder,
-        labels: email.labels || []
-      }));
+      // Transform the backend response to match our component structure
+      const transformedEmails = response.data.map(email => {
+        // Parse sender info
+        const senderMatch = email.sender.match(/(.*?)\s*<(.+?)>/) || [null, email.sender, email.sender];
+        const senderName = senderMatch[1]?.trim() || email.sender;
+        const senderEmail = senderMatch[2] || email.sender;
+
+        return {
+          id: email.id,
+          from: {
+            name: senderName,
+            email: senderEmail
+          },
+          to: [{ email: email.recipient }],
+          subject: email.subject,
+          preview: email.body ? email.body.substring(0, 200) + '...' : '',
+          body: email.body || '',
+          timestamp: new Date(email.timestamp),
+          isRead: email.is_read,
+          isStarred: false, // Will be updated when we have label info
+          hasAttachments: email.has_attachments,
+          folder: selectedFolder,
+          labels: []
+        };
+      });
       
       setEmails(transformedEmails);
       setError(null);
@@ -336,23 +340,29 @@ export default function EmailPage() {
         params: { query: searchQuery }
       });
       
-      const transformedEmails = response.data.map(email => ({
-        id: email.id,
-        from: {
-          name: email.from.split('<')[0].trim() || email.from,
-          email: email.from.match(/<(.+)>/)?.[1] || email.from
-        },
-        to: [{ email: email.to }],
-        subject: email.subject,
-        preview: email.snippet || '',
-        body: email.snippet || '',
-        timestamp: email.date ? parseISO(email.date) : new Date(),
-        isRead: !email.labels?.includes('UNREAD'),
-        isStarred: email.labels?.includes('STARRED'),
-        hasAttachments: false,
-        folder: 'search',
-        labels: email.labels || []
-      }));
+      const transformedEmails = response.data.map(email => {
+        const senderMatch = email.from.match(/(.*?)\s*<(.+?)>/) || [null, email.from, email.from];
+        const senderName = senderMatch[1]?.trim() || email.from;
+        const senderEmail = senderMatch[2] || email.from;
+
+        return {
+          id: email.id,
+          from: {
+            name: senderName,
+            email: senderEmail
+          },
+          to: [{ email: email.to }],
+          subject: email.subject,
+          preview: email.snippet || '',
+          body: email.snippet || '',
+          timestamp: email.date ? new Date(email.date) : new Date(),
+          isRead: !email.labels?.includes('UNREAD'),
+          isStarred: email.labels?.includes('STARRED'),
+          hasAttachments: false,
+          folder: 'search',
+          labels: email.labels || []
+        };
+      });
       
       setEmails(transformedEmails);
     } catch (error) {
@@ -498,6 +508,14 @@ export default function EmailPage() {
       {error && (
         <Alert severity="error" sx={{ m: 2 }}>
           {error}
+          <Button 
+            onClick={() => loadEmails()} 
+            sx={{ ml: 2 }}
+            size="small"
+            variant="outlined"
+          >
+            Retry
+          </Button>
         </Alert>
       )}
 
@@ -611,7 +629,7 @@ export default function EmailPage() {
           </ListItem>
         ))}
         
-        {filteredEmails.length === 0 && !loading && (
+        {filteredEmails.length === 0 && !loading && !error && (
           <Box sx={{ p: 4, textAlign: 'center' }}>
             <MailOutlineIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
