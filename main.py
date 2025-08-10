@@ -3505,6 +3505,63 @@ async def search_gmail_messages(
         raise HTTPException(status_code=500, detail=f"Failed to search emails: {str(e)}")
 
 
+
+@app.get("/gmail/unread-notifications")
+async def get_unread_notifications(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get unread email notifications for dashboard"""
+    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
+    if not session or not session.access_token:
+        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
+    
+    try:
+        credentials = get_credentials_from_session(session)
+        service = get_gmail_service(credentials)
+        
+        # Get unread messages
+        results = service.users().messages().list(
+            userId='me',
+            maxResults=10,
+            q='in:inbox is:unread'
+        ).execute()
+        
+        messages = results.get('messages', [])
+        notifications = []
+        
+        for msg in messages[:5]:  # Get only first 5 for dashboard
+            try:
+                message = service.users().messages().get(
+                    userId='me',
+                    id=msg['id'],
+                    format='metadata'
+                ).execute()
+                
+                headers = {h['name']: h['value'] for h in message['payload'].get('headers', [])}
+                
+                # Get snippet
+                snippet = message.get('snippet', '')[:100] + '...' if len(message.get('snippet', '')) > 100 else message.get('snippet', '')
+                
+                notifications.append({
+                    'id': message['id'],
+                    'subject': headers.get('Subject', 'No Subject'),
+                    'from': headers.get('From', 'Unknown Sender'),
+                    'snippet': snippet,
+                    'timestamp': message.get('internalDate', ''),
+                    'thread_id': message['threadId']
+                })
+            except Exception as e:
+                continue
+        
+        return {
+            'total_unread': len(messages),
+            'recent_emails': notifications
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch email notifications: {str(e)}")
+
 # Google Contacts API integration
 @app.get("/contacts")
 async def get_contacts(
@@ -3535,7 +3592,7 @@ async def get_contacts(
             names = person.get('names', [])
             name = names[0].get('displayName', '') if names else ''
             
-            # Extract email addresses
+            # Extract emails
             emails = person.get('emailAddresses', [])
             email_list = []
             for email in emails:
@@ -3545,8 +3602,8 @@ async def get_contacts(
                 })
             
             # Extract organization
-            orgs = person.get('organizations', [])
-            organization = orgs[0].get('name', '') if orgs else ''
+            organizations = person.get('organizations', [])
+            organization = organizations[0].get('name', '') if organizations else ''
             
             # Extract photo
             photos = person.get('photos', [])
@@ -3612,7 +3669,7 @@ async def search_contacts(
             names = person.get('names', [])
             name = names[0].get('displayName', '') if names else ''
             
-            # Extract email addresses
+            # Extract emails
             emails = person.get('emailAddresses', [])
             email_list = []
             for email in emails:
@@ -3622,8 +3679,8 @@ async def search_contacts(
                 })
             
             # Extract organization
-            orgs = person.get('organizations', [])
-            organization = orgs[0].get('name', '') if orgs else ''
+            organizations = person.get('organizations', [])
+            organization = organizations[0].get('name', '') if organizations else ''
             
             # Extract photo
             photos = person.get('photos', [])
@@ -3643,60 +3700,4 @@ async def search_contacts(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to search contacts: {str(e)}")
-
-@app.get("/gmail/unread-notifications")
-async def get_unread_notifications(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get unread email notifications for dashboard"""
-    session = db.query(UserSession).filter(UserSession.user_id == current_user.id).first()
-    if not session or not session.access_token:
-        raise HTTPException(status_code=400, detail="Gmail access requires authentication")
-    
-    try:
-        credentials = get_credentials_from_session(session)
-        service = get_gmail_service(credentials)
-        
-        # Get unread messages
-        results = service.users().messages().list(
-            userId='me',
-            maxResults=10,
-            q='in:inbox is:unread'
-        ).execute()
-        
-        messages = results.get('messages', [])
-        notifications = []
-        
-        for msg in messages[:5]:  # Get only first 5 for dashboard
-            try:
-                message = service.users().messages().get(
-                    userId='me',
-                    id=msg['id'],
-                    format='metadata'
-                ).execute()
-                
-                headers = {h['name']: h['value'] for h in message['payload'].get('headers', [])}
-                
-                # Get snippet
-                snippet = message.get('snippet', '')[:100] + '...' if len(message.get('snippet', '')) > 100 else message.get('snippet', '')
-                
-                notifications.append({
-                    'id': message['id'],
-                    'subject': headers.get('Subject', 'No Subject'),
-                    'from': headers.get('From', 'Unknown Sender'),
-                    'snippet': snippet,
-                    'timestamp': message.get('internalDate', ''),
-                    'thread_id': message['threadId']
-                })
-            except Exception as e:
-                continue
-        
-        return {
-            'total_unread': len(messages),
-            'recent_emails': notifications
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch email notifications: {str(e)}")
 
