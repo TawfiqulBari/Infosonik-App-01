@@ -54,6 +54,7 @@ import {
   Email as EmailIcon,
   MailOutline as MailOutlineIcon,
   Menu as MenuIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -66,6 +67,7 @@ export default function EmailPage() {
   const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   
   // State management
   const [selectedFolder, setSelectedFolder] = useState('inbox');
@@ -434,7 +436,13 @@ export default function EmailPage() {
   );
 
   const EmailList = () => (
-    <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Paper sx={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      maxWidth: '100%',
+      overflow: 'hidden'
+    }}>
       {/* Mobile Header */}
       {isMobile && (
         <Box sx={{ p: 2, display: 'flex', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
@@ -520,7 +528,12 @@ export default function EmailPage() {
       )}
 
       {/* Email List */}
-      <List sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
+      <List sx={{ 
+        flexGrow: 1, 
+        overflow: 'auto', 
+        p: 0,
+        maxWidth: '100%'
+      }}>
         {filteredEmails.map((email) => (
           <ListItem
             key={email.id}
@@ -528,7 +541,8 @@ export default function EmailPage() {
             sx={{
               borderBottom: 1,
               borderColor: 'divider',
-              '&:hover': { backgroundColor: 'action.hover' }
+              '&:hover': { backgroundColor: 'action.hover' },
+              maxWidth: '100%'
             }}
           >
             <ListItemButton
@@ -539,14 +553,20 @@ export default function EmailPage() {
                 py: 1.5,
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: 1
+                gap: 1,
+                maxWidth: '100%'
               }}
             >
               <Avatar sx={{ width: 32, height: 32, mt: 0.5 }}>
                 {email.from.name.charAt(0).toUpperCase()}
               </Avatar>
               
-              <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+              <Box sx={{ 
+                flexGrow: 1, 
+                minWidth: 0,
+                maxWidth: 'calc(100% - 80px)',
+                overflow: 'hidden'
+              }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                   <Typography
                     variant="subtitle2"
@@ -555,7 +575,8 @@ export default function EmailPage() {
                       flexGrow: 1,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      maxWidth: '70%'
                     }}
                   >
                     {email.from.name}
@@ -644,7 +665,14 @@ export default function EmailPage() {
   const EmailViewer = () => {
     if (!selectedEmail) {
       return (
-        <Paper sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Paper sx={{ 
+          height: '100%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          maxWidth: '100%',
+          overflow: 'hidden'
+        }}>
           <Box sx={{ textAlign: 'center' }}>
             <EmailIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
@@ -656,28 +684,108 @@ export default function EmailPage() {
     }
 
     return (
-      <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Paper sx={{ 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        maxWidth: '100%',
+        overflow: 'hidden'
+      }}>
+        {/* Mobile Back Button */}
+        {isMobile && (
+          <Box sx={{ 
+            p: 2, 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <IconButton 
+              onClick={() => setSelectedEmail(null)}
+              sx={{ mr: 1 }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ 
+              flexGrow: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {selectedEmail.subject || '(No Subject)'}
+            </Typography>
+          </Box>
+        )}
+
         {/* Email Header */}
-        <Box sx={{ p: 3, borderBottom: 1, borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'between', alignItems: 'flex-start', mb: 2 }}>
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h6" gutterBottom>
+        <Box sx={{ 
+          p: 3, 
+          borderBottom: 1, 
+          borderColor: 'divider',
+          maxWidth: '100%',
+          overflow: 'hidden'
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-start', 
+            mb: 2,
+            gap: 2
+          }}>
+            <Box sx={{ 
+              flexGrow: 1, 
+              minWidth: 0,
+              maxWidth: '70%'
+            }}>
+              <Typography 
+                variant="h6" 
+                gutterBottom
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
                 {selectedEmail.subject || '(No Subject)'}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <Avatar sx={{ width: 40, height: 40 }}>
                   {selectedEmail.from.name.charAt(0).toUpperCase()}
                 </Avatar>
-                <Box>
-                  <Typography variant="subtitle1" fontWeight={600}>
+                <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                  <Typography 
+                    variant="subtitle1" 
+                    fontWeight={600}
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
                     {selectedEmail.from.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
                     {selectedEmail.from.email}
                   </Typography>
                 </Box>
               </Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
                 To: {selectedEmail.to.map(t => t.email).join(', ')}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -685,33 +793,56 @@ export default function EmailPage() {
               </Typography>
             </Box>
             
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1,
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end'
+            }}>
               <Tooltip title="Reply">
-                <IconButton onClick={() => handleReply(selectedEmail)}>
+                <IconButton 
+                  onClick={() => handleReply(selectedEmail)}
+                  size={isMobile ? 'small' : 'medium'}
+                >
                   <ReplyIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Forward">
-                <IconButton onClick={() => handleForward(selectedEmail)}>
+                <IconButton 
+                  onClick={() => handleForward(selectedEmail)}
+                  size={isMobile ? 'small' : 'medium'}
+                >
                   <ForwardIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Star">
-                <IconButton onClick={() => toggleStar(selectedEmail.id)}>
+                <IconButton 
+                  onClick={() => toggleStar(selectedEmail.id)}
+                  size={isMobile ? 'small' : 'medium'}
+                >
                   {selectedEmail.isStarred ? <StarIcon color="warning" /> : <StarBorderIcon />}
                 </IconButton>
               </Tooltip>
               <Tooltip title="Archive">
-                <IconButton onClick={() => archiveEmail(selectedEmail.id)}>
+                <IconButton 
+                  onClick={() => archiveEmail(selectedEmail.id)}
+                  size={isMobile ? 'small' : 'medium'}
+                >
                   <ArchiveIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Delete">
-                <IconButton onClick={() => deleteEmail(selectedEmail.id)}>
+                <IconButton 
+                  onClick={() => deleteEmail(selectedEmail.id)}
+                  size={isMobile ? 'small' : 'medium'}
+                >
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>
-              <IconButton onClick={(e) => setMenuAnchorEl(e.currentTarget)}>
+              <IconButton 
+                onClick={(e) => setMenuAnchorEl(e.currentTarget)}
+                size={isMobile ? 'small' : 'medium'}
+              >
                 <MoreVertIcon />
               </IconButton>
             </Box>
@@ -719,8 +850,24 @@ export default function EmailPage() {
         </Box>
 
         {/* Email Content */}
-        <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto' }}>
-          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+        <Box sx={{ 
+          p: 3, 
+          flexGrow: 1, 
+          overflow: 'auto',
+          maxWidth: '100%',
+          wordBreak: 'break-word'
+        }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              whiteSpace: 'pre-wrap', 
+              lineHeight: 1.6,
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              maxWidth: '100%',
+              hyphens: 'auto'
+            }}
+          >
             {selectedEmail.body}
           </Typography>
         </Box>
@@ -736,7 +883,13 @@ export default function EmailPage() {
       fullWidth
       fullScreen={isMobile}
       PaperProps={{
-        sx: { height: isMobile ? '100vh' : '80vh', display: 'flex', flexDirection: 'column' }
+        sx: { 
+          height: isMobile ? '100vh' : '80vh', 
+          display: 'flex', 
+          flexDirection: 'column',
+          maxWidth: '100%',
+          overflow: 'hidden'
+        }
       }}
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -746,7 +899,13 @@ export default function EmailPage() {
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <DialogContent sx={{ 
+        flexGrow: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: 2,
+        overflow: 'auto'
+      }}>
         <TextField
           fullWidth
           label="To"
@@ -754,18 +913,18 @@ export default function EmailPage() {
           onChange={(e) => setComposeData(prev => ({ ...prev, to: e.target.value }))}
         />
         
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <TextField
             label="CC"
             value={composeData.cc}
             onChange={(e) => setComposeData(prev => ({ ...prev, cc: e.target.value }))}
-            sx={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, minWidth: 150 }}
           />
           <TextField
             label="BCC"
             value={composeData.bcc}
             onChange={(e) => setComposeData(prev => ({ ...prev, bcc: e.target.value }))}
-            sx={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, minWidth: 150 }}
           />
         </Box>
         
@@ -787,7 +946,7 @@ export default function EmailPage() {
         />
       </DialogContent>
       
-      <DialogActions sx={{ p: 3, gap: 1 }}>
+      <DialogActions sx={{ p: 3, gap: 1, flexWrap: 'wrap' }}>
         <Button startIcon={<AttachmentIcon />} variant="outlined">
           Attach Files
         </Button>
@@ -836,7 +995,12 @@ export default function EmailPage() {
   );
 
   return (
-    <Box sx={{ display: 'flex', height: 'calc(100vh - 120px)' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      height: 'calc(100vh - 120px)',
+      maxWidth: '100vw',
+      overflow: 'hidden'
+    }}>
       {/* Desktop Drawer */}
       <Drawer
         variant="permanent"
@@ -875,11 +1039,23 @@ export default function EmailPage() {
       </Drawer>
 
       {/* Main Content */}
-      <Box sx={{ flexGrow: 1, display: 'flex', gap: 2, p: { xs: 1, md: 2 } }}>
+      <Box sx={{ 
+        flexGrow: 1, 
+        display: 'flex', 
+        gap: 2, 
+        p: { xs: 1, md: 2 },
+        maxWidth: '100%',
+        overflow: 'hidden'
+      }}>
         {/* Email List */}
         <Box sx={{ 
           width: { xs: '100%', lg: '40%' },
-          display: { xs: selectedEmail && !isMobile ? 'none' : 'block', lg: 'block' }
+          display: { 
+            xs: selectedEmail ? 'none' : 'block', 
+            lg: 'block' 
+          },
+          maxWidth: { xs: '100%', lg: '40%' },
+          overflow: 'hidden'
         }}>
           <EmailList />
         </Box>
@@ -887,7 +1063,12 @@ export default function EmailPage() {
         {/* Email Viewer */}
         <Box sx={{ 
           width: { xs: '100%', lg: '60%' },
-          display: { xs: selectedEmail ? 'block' : 'none', lg: 'block' }
+          display: { 
+            xs: selectedEmail ? 'block' : 'none', 
+            lg: 'block' 
+          },
+          maxWidth: { xs: '100%', lg: '60%' },
+          overflow: 'hidden'
         }}>
           <EmailViewer />
         </Box>
