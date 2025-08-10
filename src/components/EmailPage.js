@@ -95,11 +95,11 @@ export default function EmailPage() {
   const [contacts, setContacts] = useState([]);
   const [contactsLoading, setContactsLoading] = useState(false);
 
-  // Compose email state - using useCallback to prevent recreating on every render
+  // Compose email state - separate arrays for autocomplete
   const [composeData, setComposeData] = useState({
-    to: '',
-    cc: '',
-    bcc: '',
+    to: [],
+    cc: [],
+    bcc: [],
     subject: '',
     body: '',
     attachments: []
@@ -294,9 +294,9 @@ export default function EmailPage() {
 
   const handleCompose = useCallback(() => {
     setComposeData({
-      to: '',
-      cc: '',
-      bcc: '',
+      to: [],
+      cc: [],
+      bcc: [],
       subject: '',
       body: '',
       attachments: []
@@ -306,9 +306,9 @@ export default function EmailPage() {
 
   const handleReply = useCallback((email) => {
     setComposeData({
-      to: email.from.email,
-      cc: '',
-      bcc: '',
+      to: [email.from.email],
+      cc: [],
+      bcc: [],
       subject: `Re: ${email.subject}`,
       body: `\n\n--- Original Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
       attachments: []
@@ -318,9 +318,9 @@ export default function EmailPage() {
 
   const handleForward = useCallback((email) => {
     setComposeData({
-      to: '',
-      cc: '',
-      bcc: '',
+      to: [],
+      cc: [],
+      bcc: [],
       subject: `Fwd: ${email.subject}`,
       body: `\n\n--- Forwarded Message ---\nFrom: ${email.from.name} <${email.from.email}>\nDate: ${format(email.timestamp, 'PPpp')}\nSubject: ${email.subject}\n\n${email.body}`,
       attachments: []
@@ -331,13 +331,30 @@ export default function EmailPage() {
   const sendEmail = useCallback(async () => {
     try {
       setLoading(true);
-      await api.post('/gmail/send', composeData);
+      
+      // Convert arrays back to comma-separated strings for API
+      const emailData = {
+        to: Array.isArray(composeData.to) 
+          ? composeData.to.map(item => typeof item === 'string' ? item : item.primary_email || item.email || item).join(', ')
+          : composeData.to,
+        cc: Array.isArray(composeData.cc) 
+          ? composeData.cc.map(item => typeof item === 'string' ? item : item.primary_email || item.email || item).join(', ')
+          : composeData.cc,
+        bcc: Array.isArray(composeData.bcc) 
+          ? composeData.bcc.map(item => typeof item === 'string' ? item : item.primary_email || item.email || item).join(', ')
+          : composeData.bcc,
+        subject: composeData.subject,
+        body: composeData.body,
+        attachments: composeData.attachments
+      };
+      
+      await api.post('/gmail/send', emailData);
       toast.success('Email sent successfully');
       setComposeOpen(false);
       setComposeData({
-        to: '',
-        cc: '',
-        bcc: '',
+        to: [],
+        cc: [],
+        bcc: [],
         subject: '',
         body: '',
         attachments: []
@@ -350,9 +367,25 @@ export default function EmailPage() {
     }
   }, [composeData]);
 
-  // Memoized update functions to prevent re-renders
-  const updateComposeField = useCallback((field, value) => {
-    setComposeData(prev => ({ ...prev, [field]: value }));
+  // Separate update functions for each field
+  const updateToField = useCallback((value) => {
+    setComposeData(prev => ({ ...prev, to: value }));
+  }, []);
+
+  const updateCcField = useCallback((value) => {
+    setComposeData(prev => ({ ...prev, cc: value }));
+  }, []);
+
+  const updateBccField = useCallback((value) => {
+    setComposeData(prev => ({ ...prev, bcc: value }));
+  }, []);
+
+  const updateSubjectField = useCallback((value) => {
+    setComposeData(prev => ({ ...prev, subject: value }));
+  }, []);
+
+  const updateBodyField = useCallback((value) => {
+    setComposeData(prev => ({ ...prev, body: value }));
   }, []);
 
   const searchEmails = useCallback(async () => {
@@ -938,29 +971,23 @@ export default function EmailPage() {
           options={contacts}
           getOptionLabel={(option) => {
             if (typeof option === 'string') return option;
-            return `${option.name} <${option.primary_email}>`;
+            return option.name ? `${option.name} <${option.primary_email}>` : option.primary_email;
           }}
-          value={composeData.to.split(',').filter(Boolean)}
-          onChange={(event, newValue) => {
-            const emailString = newValue.map(item => {
-              if (typeof item === 'string') return item.trim();
-              return item.primary_email;
-            }).join(', ');
-            updateComposeField('to', emailString);
-          }}
+          value={composeData.to || []}
+          onChange={(event, newValue) => updateToField(newValue)}
           renderOption={(props, option) => (
             <Box component="li" {...props}>
               <ListItemAvatar>
                 <Avatar sx={{ width: 32, height: 32 }}>
                   {option.photo ? (
-                    <img src={option.photo} alt={option.name} style={{ width: '100%', height: '100%' }} />
+                    <img src={option.photo} alt={option.name} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
                   ) : (
-                    <PersonIcon />
+                    option.name ? option.name.charAt(0).toUpperCase() : <PersonIcon />
                   )}
                 </Avatar>
               </ListItemAvatar>
               <Box>
-                <Typography variant="body2">{option.name}</Typography>
+                <Typography variant="body2">{option.name || option.primary_email}</Typography>
                 <Typography variant="caption" color="text.secondary">
                   {option.primary_email}
                 </Typography>
@@ -990,16 +1017,10 @@ export default function EmailPage() {
             options={contacts}
             getOptionLabel={(option) => {
               if (typeof option === 'string') return option;
-              return `${option.name} <${option.primary_email}>`;
+              return option.name ? `${option.name} <${option.primary_email}>` : option.primary_email;
             }}
-            value={composeData.cc.split(',').filter(Boolean)}
-            onChange={(event, newValue) => {
-              const emailString = newValue.map(item => {
-                if (typeof item === 'string') return item.trim();
-                return item.primary_email;
-              }).join(', ');
-              updateComposeField('cc', emailString);
-            }}
+            value={composeData.cc || []}
+            onChange={(event, newValue) => updateCcField(newValue)}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1015,16 +1036,10 @@ export default function EmailPage() {
             options={contacts}
             getOptionLabel={(option) => {
               if (typeof option === 'string') return option;
-              return `${option.name} <${option.primary_email}>`;
+              return option.name ? `${option.name} <${option.primary_email}>` : option.primary_email;
             }}
-            value={composeData.bcc.split(',').filter(Boolean)}
-            onChange={(event, newValue) => {
-              const emailString = newValue.map(item => {
-                if (typeof item === 'string') return item.trim();
-                return item.primary_email;
-              }).join(', ');
-              updateComposeField('bcc', emailString);
-            }}
+            value={composeData.bcc || []}
+            onChange={(event, newValue) => updateBccField(newValue)}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1040,7 +1055,7 @@ export default function EmailPage() {
           fullWidth
           label="Subject"
           value={composeData.subject}
-          onChange={(e) => updateComposeField('subject', e.target.value)}
+          onChange={(e) => updateSubjectField(e.target.value)}
         />
         
         <TextField
@@ -1049,7 +1064,7 @@ export default function EmailPage() {
           rows={isMobile ? 8 : 12}
           label="Message"
           value={composeData.body}
-          onChange={(e) => updateComposeField('body', e.target.value)}
+          onChange={(e) => updateBodyField(e.target.value)}
           sx={{ flexGrow: 1 }}
         />
       </DialogContent>
@@ -1065,7 +1080,7 @@ export default function EmailPage() {
         <Button 
           variant="contained" 
           onClick={sendEmail}
-          disabled={loading || !composeData.to || !composeData.subject}
+          disabled={loading || !composeData.to || composeData.to.length === 0 || !composeData.subject}
           startIcon={loading ? <CircularProgress size={16} /> : <SendIcon />}
         >
           Send
