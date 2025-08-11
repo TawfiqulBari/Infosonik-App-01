@@ -43,7 +43,7 @@ const navigation = [
   { name: 'Drive', href: '/drive', icon: CloudQueue },
   { name: 'Sales', href: '/sales', icon: TrendingUp },
   { name: 'Leave', href: '/leave', icon: EventAvailable },
-  { name: 'Expenses', href: '/expenses', icon: Receipt },
+  { name: 'Smart Expenses', href: '/expenses', icon: Receipt },
   { name: 'Chat', href: '/chat', icon: Chat },
   { name: 'Email', href: '/email', icon: Email },
   { name: 'Backup', href: '/backup', icon: Backup },

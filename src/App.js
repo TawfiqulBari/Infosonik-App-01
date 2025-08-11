@@ -18,7 +18,7 @@ import DrivePage from './components/DrivePage';
 import EmailPage from './components/EmailPage';
 import SalesPage from './components/SalesPage';
 import LeavePage from './components/LeavePage';
-import ExpensePage from './components/ExpensePage';
+import IntelligentExpensePage from './components/IntelligentExpensePage';
 import ChatPage from './components/ChatPage';
 import BackupPage from './components/BackupPage';
 import AdminPage from './components/AdminPage';
@@ -177,7 +177,7 @@ function AppContent() {
                 <Route path="/drive" element={<DrivePage />} />
                 <Route path="/sales" element={<SalesPage />} />
                 <Route path="/leave" element={<LeavePage />} />
-                <Route path="/expenses" element={<ExpensePage />} />
+                <Route path="/expenses" element={<IntelligentExpensePage />} />
                 <Route path="/chat" element={<ChatPage />} />
                 <Route path="/email" element={<EmailPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
