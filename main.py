@@ -25,6 +25,11 @@ import aiofiles
 from typing import Optional, List
 import uuid
 from pathlib import Path
+import shutil
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Security configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")
@@ -3835,34 +3840,34 @@ async def get_expense_reports(current_user: User = Depends(get_current_user), db
     
     return result
 
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
-        # Serve React app for all routes not handled by API
-        if (
-            full_path.startswith("api/") or 
-            full_path.startswith("docs") or 
-            full_path.startswith("redoc") or
-            full_path.startswith("auth/") or
-            full_path.startswith("notes/") or
-            full_path.startswith("events/") or
-            full_path.startswith("files/") or
-            full_path.startswith("admin/") or
-            full_path.startswith("leave/") or
-            full_path.startswith("bills/") or
-            full_path.startswith("sales/") or
-            full_path.startswith("user/") or
-            full_path.startswith("backup/") or
-            full_path.startswith("voice-to-text/") or
-            full_path.startswith("drive/") or
-            full_path.startswith("gmail/") or
-            full_path.startswith("chat/") or
-            full_path.startswith("webhook/") or
-            full_path.startswith("contacts") or
-            full_path.startswith("email-notifications") or
-            full_path.startswith("test/")
-        ):
-            raise HTTPException(status_code=404, detail="Not found")
-        return FileResponse('static/index.html')
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    # Serve React app for all routes not handled by API
+    if (
+        full_path.startswith("api/") or
+        full_path.startswith("docs") or
+        full_path.startswith("redoc") or
+        full_path.startswith("auth/") or
+        full_path.startswith("notes/") or
+        full_path.startswith("events/") or
+        full_path.startswith("files/") or
+        full_path.startswith("admin/") or
+        full_path.startswith("leave/") or
+        full_path.startswith("bills/") or
+        full_path.startswith("sales/") or
+        full_path.startswith("user/") or
+        full_path.startswith("backup/") or
+        full_path.startswith("voice-to-text/") or
+        full_path.startswith("drive/") or
+        full_path.startswith("gmail/") or
+        full_path.startswith("chat/") or
+        full_path.startswith("webhook/") or
+        full_path.startswith("contacts") or
+        full_path.startswith("email-notifications") or
+        full_path.startswith("test/")
+    ):
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse('static/index.html')
 
 # Test endpoint to debug authentication
 @app.get("/test/auth")
