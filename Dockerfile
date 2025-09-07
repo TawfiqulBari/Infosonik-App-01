@@ -16,7 +16,6 @@ FROM python:3.11-slim as backend
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
-    portaudio19-dev \
     python3-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
