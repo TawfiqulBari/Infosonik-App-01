@@ -27,8 +27,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Python application
-COPY main.py .
+# Copy Python application files
+COPY main.py database.py models.py config.py auth.py utils.py ./
+COPY routes/ ./routes/
+COPY app/ ./app/
 
 # Copy built React frontend from first stage
 COPY --from=frontend-build /app/build ./static
