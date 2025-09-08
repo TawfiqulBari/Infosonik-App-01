@@ -1,21 +1,6 @@
 version: '3.8'
 
 services:
-  nginx:
-    image: nginx:latest
-    container_name: nginx-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certs:/etc/nginx/certs:ro
-    depends_on:
-      - app
-    networks:
-      - app-network
-    restart: unless-stopped
-
   db:
     image: postgres:15
     environment:
@@ -25,28 +10,48 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - infosonik-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d webapp_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   app:
     build: .
     env_file:
       - .env.prod
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
-      - app-network
+      - infosonik-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web-app.rule=Host(`infsnk-app-01.tawfiqulbari.work`)"
+      - "traefik.http.routers.web-app.entrypoints=websecure"
+      - "traefik.http.routers.web-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.web-app.loadbalancer.server.port=8000"
+      - "traefik.http.routers.web-app-web.rule=Host(`infsnk-app-01.tawfiqulbari.work`)"
+      - "traefik.http.routers.web-app-web.entrypoints=web"
+      - "traefik.http.routers.web-app-web.middlewares=redirect-to-https@file"
+      - "traefik.http.routers.web-app-web.service=web-app"
+      - "traefik.http.routers.localhost.rule=Host(`localhost`)"
+      - "traefik.http.routers.localhost.entrypoints=web"
+      - "traefik.http.routers.localhost.service=web-app"
 
 volumes:
   postgres_data:
 
 networks:
-  app-network:
-    driver: bridge
+  infosonik-network:
+    external: true

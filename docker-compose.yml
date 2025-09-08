@@ -1,29 +1,6 @@
 version: '3.8'
 
 services:
-  traefik:
-    image: traefik:v3.0
-    container_name: traefik
-    command:
-      - "--configfile=/etc/traefik/traefik.yml"
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"  # Dashboard
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik.yml:/etc/traefik/traefik.yml
-    networks:
-      - app-network
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      # Dashboard configuration (dev only)
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.entrypoints=websecure"
-      - "traefik.http.routers.dashboard.tls=true"
-
   db:
     image: postgres:15
     environment:
@@ -33,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - infosonik-network
     restart: unless-stopped
 
   app:
@@ -44,14 +21,19 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     depends_on:
       - db
-      - traefik
     networks:
-      - app-network
+      - infosonik-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web-app.rule=Host(`infsnk-app-01.tawfiqulbari.work`)"
+      - "traefik.http.routers.web-app.entrypoints=websecure"
+      - "traefik.http.routers.web-app.tls.certresolver=letsencrypt"
+      - "traefik.http.services.web-app.loadbalancer.server.port=8000"
 
 volumes:
   postgres_data:
 
 networks:
-  app-network:
-    driver: bridge
+  infosonik-network:
+    external: true
